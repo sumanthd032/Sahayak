@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class UserInfoSection extends StatefulWidget {
   final Map<String, dynamic> userData;
-  const UserInfoSection({Key? key, required this.userData}) : super(key: key);
+  const UserInfoSection({super.key, required this.userData});
 
   @override
   State<UserInfoSection> createState() => _UserInfoSectionState();

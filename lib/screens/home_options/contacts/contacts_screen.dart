@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContactScreen extends StatefulWidget {
+  const ContactScreen({super.key});
+
   @override
   _ContactScreenState createState() => _ContactScreenState();
 }
@@ -160,7 +162,7 @@ class ContactItem extends StatelessWidget {
   final VoidCallback onCall;
   final VoidCallback onDelete;
 
-  const ContactItem({
+  const ContactItem({super.key, 
     required this.contactId,
     required this.name,
     required this.phone,

@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class StoryZoneScreen extends StatefulWidget {
-  const StoryZoneScreen({Key? key}) : super(key: key);
+  const StoryZoneScreen({super.key});
 
   @override
   State<StoryZoneScreen> createState() => _StoryZoneScreenState();
@@ -14,8 +17,57 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
   final TextEditingController _promptController = TextEditingController();
   String _generatedStory = '';
   bool _isLoading = false;
+  bool _isSpeaking = false;
 
-  final String _apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace this
+  final String _apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace with your key
+  final FlutterTts _flutterTts = FlutterTts();
+
+  String _preferredLangCode = 'en'; // default
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPreferredLanguage();
+  }
+
+  Future<void> _fetchPreferredLanguage() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final lang = doc['preferredLanguage'] ?? 'English';
+
+        // Example mapping, you can expand this
+        final langMap = {
+          'English': 'en',
+          'Hindi': 'hi',
+          'Kannada': 'kn',
+          'Telugu': 'te',
+          'Tamil': 'ta',
+        };
+
+        setState(() {
+          _preferredLangCode = langMap[lang] ?? 'en';
+        });
+      }
+    } catch (e) {
+      debugPrint('Language fetch error: $e');
+    }
+  }
+
+  Future<String> _translateStory(String text, String targetLangCode) async {
+    final url = Uri.parse(
+        'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=$targetLangCode&dt=t&q=${Uri.encodeFull(text)}');
+
+    try {
+      final response = await http.get(url);
+      final List<dynamic> data = json.decode(response.body);
+      return data[0][0][0]; // First sentence
+    } catch (e) {
+      debugPrint('Translation error: $e');
+      return text; // Fallback to original
+    }
+  }
 
   Future<void> _generateStory() async {
     final prompt = _promptController.text.trim();
@@ -26,12 +78,10 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
       _generatedStory = '';
     });
 
-    final url =
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_apiKey');
+    final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_apiKey');
 
-    final headers = {
-      'Content-Type': 'application/json',
-    };
+    final headers = {'Content-Type': 'application/json'};
 
     final body = jsonEncode({
       'contents': [
@@ -55,7 +105,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
         });
       } else {
         setState(() {
-          _generatedStory = 'Failed to generate story: ${data['error']?['message'] ?? "Unknown error"}';
+          _generatedStory =
+              'Failed to generate story: ${data['error']?['message'] ?? "Unknown error"}';
           _isLoading = false;
         });
       }
@@ -65,6 +116,29 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _speakStory() async {
+    if (_generatedStory.isEmpty) return;
+
+    setState(() {
+      _isSpeaking = true;
+    });
+
+    final translated = await _translateStory(_generatedStory, _preferredLangCode);
+
+    await _flutterTts.setLanguage(_preferredLangCode);
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setPitch(1.0);
+
+    await _flutterTts.speak(translated);
+  }
+
+  Future<void> _stopSpeaking() async {
+    await _flutterTts.stop();
+    setState(() {
+      _isSpeaking = false;
+    });
   }
 
   @override
@@ -122,7 +196,12 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator(color: Colors.teal))
                   : _generatedStory.isEmpty
-                      ? Center(child: Text('Your story will appear here...', style: GoogleFonts.poppins(color: Colors.grey)))
+                      ? Center(
+                          child: Text(
+                            'Your story will appear here...',
+                            style: GoogleFonts.poppins(color: Colors.grey),
+                          ),
+                        )
                       : SingleChildScrollView(
                           child: Container(
                             padding: const EdgeInsets.all(16),
@@ -138,9 +217,38 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
                                 ),
                               ],
                             ),
-                            child: Text(
-                              _generatedStory,
-                              style: GoogleFonts.poppins(fontSize: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _generatedStory,
+                                  style: GoogleFonts.poppins(fontSize: 16),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: _isSpeaking ? null : _speakStory,
+                                      icon: const Icon(Icons.volume_up),
+                                      label: const Text('Narrate'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green.shade600,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    ElevatedButton.icon(
+                                      onPressed: _stopSpeaking,
+                                      icon: const Icon(Icons.stop),
+                                      label: const Text('Stop'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red.shade600,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
                             ),
                           ),
                         ),

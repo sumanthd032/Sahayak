@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class WellnessModeScreen extends StatefulWidget {
-  const WellnessModeScreen({Key? key}) : super(key: key);
+  const WellnessModeScreen({super.key});
 
   @override
   State<WellnessModeScreen> createState() => _WellnessModeScreenState();

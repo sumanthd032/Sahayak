@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'noteDetail_screen.dart';
 
 class MemoryNotesScreen extends StatefulWidget {
-  const MemoryNotesScreen({Key? key}) : super(key: key);
+  const MemoryNotesScreen({super.key});
 
   @override
   State<MemoryNotesScreen> createState() => _MemoryNotesScreenState();

@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ReligiousModeScreen extends StatefulWidget {
-  const ReligiousModeScreen({Key? key}) : super(key: key);
+  const ReligiousModeScreen({super.key});
 
   @override
   State<ReligiousModeScreen> createState() => _ReligiousModeScreenState();

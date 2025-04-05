@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class PensionScreen extends StatefulWidget {
-  const PensionScreen({Key? key}) : super(key: key);
+  const PensionScreen({super.key});
 
   @override
   State<PensionScreen> createState() => _PensionScreenState();

@@ -7,12 +7,12 @@ class NoteDetailScreen extends StatelessWidget {
   final Function({String? id, String? existingText}) onEdit;
 
   const NoteDetailScreen({
-    Key? key,
+    super.key,
     required this.note,
     required this.noteId,
     required this.onDelete,
     required this.onEdit,
-  }) : super(key: key);
+  });
 
   void _confirmDelete(BuildContext context) {
     showDialog(

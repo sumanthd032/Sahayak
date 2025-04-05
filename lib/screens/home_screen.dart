@@ -13,7 +13,7 @@ import 'package:sahayak/screens/home_options/story.dart';
 import 'package:sahayak/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -217,8 +217,8 @@ class OptionItem extends StatelessWidget {
     required this.title,
     required this.icon,
     this.onTap,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

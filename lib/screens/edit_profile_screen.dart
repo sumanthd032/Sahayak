@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
-  const EditProfileScreen({Key? key, required this.userData}) : super(key: key);
+  const EditProfileScreen({super.key, required this.userData});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();

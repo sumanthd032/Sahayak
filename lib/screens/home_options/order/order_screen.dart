@@ -5,7 +5,7 @@ class OrderThingsScreen extends StatelessWidget {
   const OrderThingsScreen({super.key});
 
   Future<void> _promptAndSearch(BuildContext context, String site) async {
-    final TextEditingController _searchController = TextEditingController();
+    final TextEditingController searchController = TextEditingController();
 
     await showDialog(
       context: context,
@@ -14,7 +14,7 @@ class OrderThingsScreen extends StatelessWidget {
         return AlertDialog(
           title: Text("Search on $site", style: const TextStyle(fontSize: 20)),
           content: TextField(
-            controller: _searchController,
+            controller: searchController,
             style: const TextStyle(fontSize: 18),
             decoration: const InputDecoration(
               hintText: "Enter product name/item",
@@ -29,7 +29,7 @@ class OrderThingsScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () async {
-                String query = _searchController.text.trim();
+                String query = searchController.text.trim();
                 if (query.isNotEmpty) {
                   Navigator.of(context).pop();
                   _launchSearch(site, query);

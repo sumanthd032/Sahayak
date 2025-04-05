@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class GeneralKnowledgeModeScreen extends StatefulWidget {
-  const GeneralKnowledgeModeScreen({Key? key}) : super(key: key);
+  const GeneralKnowledgeModeScreen({super.key});
 
   @override
   State<GeneralKnowledgeModeScreen> createState() =>

@@ -127,8 +127,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             ElevatedButton(
-              child: const Text('Create'),
               onPressed: _createCommunity,
+              child: const Text('Create'),
             ),
           ],
         );

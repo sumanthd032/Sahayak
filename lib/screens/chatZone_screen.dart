@@ -8,7 +8,7 @@ import 'package:sahayak/chatZOne/travel_mode.dart';
 import 'package:sahayak/chatZOne/wellness_mode.dart';
 
 class ChatZoneScreen extends StatelessWidget {
-  const ChatZoneScreen({Key? key}) : super(key: key);
+  const ChatZoneScreen({super.key});
 
   final List<Map<String, dynamic>> modes = const [
     {

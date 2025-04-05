@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sahayak/screens/home_options/fun%20zone/tic_tac_toe.dart';
 
 class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

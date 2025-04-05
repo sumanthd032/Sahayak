@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class TravelModeScreen extends StatefulWidget {
-  const TravelModeScreen({Key? key}) : super(key: key);
+  const TravelModeScreen({super.key});
 
   @override
   State<TravelModeScreen> createState() => _TravelModeScreenState();

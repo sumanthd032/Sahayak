@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CustomModeScreen extends StatefulWidget {
-  const CustomModeScreen({Key? key}) : super(key: key);
+  const CustomModeScreen({super.key});
 
   @override
   State<CustomModeScreen> createState() => _CustomModeScreenState();

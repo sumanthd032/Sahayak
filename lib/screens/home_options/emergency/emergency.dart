@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EmergencyScreen extends StatefulWidget {
-  const EmergencyScreen({Key? key}) : super(key: key);
+  const EmergencyScreen({super.key});
 
   @override
   State<EmergencyScreen> createState() => _EmergencyScreenState();
