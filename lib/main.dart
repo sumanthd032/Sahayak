@@ -4,21 +4,18 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sahayak/screens/auth%20screen/login_screen.dart';
 import 'firebase_options.dart';
 
-
 void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Hive.openBox<String>('notesBox'); 
+  await Hive.openBox<String>('notesBox');
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
- 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -31,4 +28,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

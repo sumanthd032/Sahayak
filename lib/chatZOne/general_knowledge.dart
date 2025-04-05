@@ -201,6 +201,9 @@ You are now in Knowledge Mode, a calm and enlightening environment. Answer quest
   void _startListening() async {
     if (!_speechAvailable) return;
 
+    // Stop any ongoing TTS when mic is activated
+    await _flutterTts.stop();
+
     if (!_isListening) {
       setState(() {
         _isListening = true;
@@ -242,7 +245,7 @@ You are now in Knowledge Mode, a calm and enlightening environment. Answer quest
           'Knowledge Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.teal,
       ),
       body: Column(
         children: [
@@ -309,7 +312,7 @@ You are now in Knowledge Mode, a calm and enlightening environment. Answer quest
                     controller: _controller,
                     enabled: !_isLoadingResponse,
                     decoration: InputDecoration(
-                      hintText: 'Ask something insightful or philosophical...',
+                      hintText: 'Ask something insightful...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -325,7 +328,7 @@ You are now in Knowledge Mode, a calm and enlightening environment. Answer quest
                       _isLoadingResponse
                           ? null
                           : () => _sendMessage(_controller.text),
-                  color: Colors.indigo,
+                  color: Colors.teal,
                 ),
               ],
             ),
@@ -337,7 +340,7 @@ You are now in Knowledge Mode, a calm and enlightening environment. Answer quest
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.indigo,
+                color: _isListening ? Colors.red : Colors.teal,
               ),
             ),
           ),
