@@ -24,30 +24,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    fullNameController = TextEditingController(text: widget.userData['full_name'] ?? '');
-    phoneController = TextEditingController(text: widget.userData['phone'] ?? '');
-    emailController = TextEditingController(text: widget.userData['email'] ?? '');
-    addressController = TextEditingController(text: widget.userData['address'] ?? '');
+    fullNameController = TextEditingController(
+      text: widget.userData['full_name'] ?? '',
+    );
+    phoneController = TextEditingController(
+      text: widget.userData['phone'] ?? '',
+    );
+    emailController = TextEditingController(
+      text: widget.userData['email'] ?? '',
+    );
+    addressController = TextEditingController(
+      text: widget.userData['address'] ?? '',
+    );
     dobController = TextEditingController(text: widget.userData['dob'] ?? '');
     gender = widget.userData['gender'];
   }
 
   Future<void> saveProfile() async {
     if (_formKey.currentState!.validate()) {
-      await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
-        'full_name': fullNameController.text,
-        'phone': phoneController.text,
-        'email': emailController.text,
-        'address': addressController.text,
-        'dob': dobController.text,
-        'gender': gender,
-      });
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .update({
+            'full_name': fullNameController.text,
+            'phone': phoneController.text,
+            'email': emailController.text,
+            'address': addressController.text,
+            'dob': dobController.text,
+            'gender': gender,
+          });
       Navigator.pop(context);
     }
   }
 
-  Widget buildTextField(String label, TextEditingController controller,
-      {TextInputType keyboardType = TextInputType.text}) {
+  Widget buildTextField(
+    String label,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
@@ -58,12 +72,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           floatingLabelStyle: const TextStyle(color: Colors.indigo),
           filled: true,
           fillColor: Colors.grey[100],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Please enter $label' : null,
+        validator:
+            (value) =>
+                value == null || value.isEmpty ? 'Please enter $label' : null,
       ),
     );
   }
@@ -79,9 +92,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           fillColor: Colors.grey[100],
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
-        items: ['Male', 'Female', 'Other']
-            .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-            .toList(),
+        items:
+            [
+              'Male',
+              'Female',
+              'Other',
+            ].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
         onChanged: (value) => setState(() => gender = value),
         validator: (value) => value == null ? 'Please select gender' : null,
       ),
@@ -89,7 +105,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> pickDate() async {
-    DateTime initialDate = DateTime.tryParse(dobController.text) ?? DateTime(2000);
+    DateTime initialDate =
+        DateTime.tryParse(dobController.text) ?? DateTime(2000);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -97,7 +114,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       lastDate: DateTime.now(),
     );
     if (picked != null) {
-      dobController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      dobController.text =
+          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
     }
   }
 
@@ -112,12 +130,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           labelText: "Date of Birth",
           filled: true,
           fillColor: Colors.grey[100],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         ),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Please select date of birth' : null,
+        validator:
+            (value) =>
+                value == null || value.isEmpty
+                    ? 'Please select date of birth'
+                    : null,
       ),
     );
   }
@@ -126,8 +145,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Profile"),
-        backgroundColor: Colors.indigo,
+        title: const Text(
+          "Edit Profile",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -136,8 +158,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             children: [
               buildTextField("Full Name", fullNameController),
-              buildTextField("Phone", phoneController, keyboardType: TextInputType.phone),
-              buildTextField("Email", emailController, keyboardType: TextInputType.emailAddress),
+              buildTextField(
+                "Phone",
+                phoneController,
+                keyboardType: TextInputType.phone,
+              ),
+              buildTextField(
+                "Email",
+                emailController,
+                keyboardType: TextInputType.emailAddress,
+              ),
               buildTextField("Address", addressController),
               buildGenderDropdown(),
               buildDateField(),
@@ -145,12 +175,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ElevatedButton(
                 onPressed: saveProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
+                  backgroundColor: Colors.blue,
                   minimumSize: const Size.fromHeight(50),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text("Save Changes", style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  "Save Changes",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             ],
           ),

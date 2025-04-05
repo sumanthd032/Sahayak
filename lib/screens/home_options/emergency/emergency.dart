@@ -25,7 +25,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (uid == null) return;
 
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists && doc.data()?['emergencyContact'] != null) {
         setState(() {
           familyNumber = doc.data()!['emergencyContact'];
@@ -41,13 +42,17 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to launch dialer.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to launch dialer.')));
     }
   }
 
-  Widget buildEmergencyTile({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget buildEmergencyTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -63,7 +68,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
               color: Colors.red.shade100,
               blurRadius: 6,
               offset: const Offset(2, 4),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -71,7 +76,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           children: [
             Icon(icon, size: 40, color: Colors.redAccent),
             const SizedBox(height: 10),
-            Text(label, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ),
@@ -83,7 +91,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     return Scaffold(
       backgroundColor: Colors.red.shade50,
       appBar: AppBar(
-        title: const Text('Emergency'),
+        title: const Text(
+          'Emergency',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.redAccent,
       ),
       body: Padding(
@@ -101,7 +112,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                   _callNumber(familyNumber!);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('No family number found in profile.')),
+                    const SnackBar(
+                      content: Text('No family number found in profile.'),
+                    ),
                   );
                 }
               },

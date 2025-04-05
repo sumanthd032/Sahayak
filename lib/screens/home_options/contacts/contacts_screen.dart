@@ -41,16 +41,17 @@ class _ContactScreenState extends State<ContactScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not place a call')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not place a call')));
     }
   }
 
   void _deleteContact(String contactId) async {
     await _firestore.collection('contacts').doc(contactId).delete();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Contact deleted')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Contact deleted')));
   }
 
   @override
@@ -65,14 +66,16 @@ class _ContactScreenState extends State<ContactScreen> {
     final user = _auth.currentUser;
 
     if (user == null) {
-      return Scaffold(
-        body: Center(child: Text('User not logged in')),
-      );
+      return Scaffold(body: Center(child: Text('User not logged in')));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Contacts'),
+        backgroundColor: Colors.blue,
+        title: Text(
+          'My Contacts',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -83,10 +86,11 @@ class _ContactScreenState extends State<ContactScreen> {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection('contacts')
-            .where('uid', isEqualTo: user.uid)
-            .snapshots(),
+        stream:
+            _firestore
+                .collection('contacts')
+                .where('uid', isEqualTo: user.uid)
+                .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -162,7 +166,8 @@ class ContactItem extends StatelessWidget {
   final VoidCallback onCall;
   final VoidCallback onDelete;
 
-  const ContactItem({super.key, 
+  const ContactItem({
+    super.key,
     required this.contactId,
     required this.name,
     required this.phone,
@@ -179,11 +184,7 @@ class ContactItem extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -193,12 +194,15 @@ class ContactItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  name,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 5),
-                Text(phone,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+                Text(
+                  phone,
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                ),
               ],
             ),
           ),
@@ -214,7 +218,7 @@ class ContactItem extends StatelessWidget {
                 onPressed: onDelete,
               ),
             ],
-          )
+          ),
         ],
       ),
     );

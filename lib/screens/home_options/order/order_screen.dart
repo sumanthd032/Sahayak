@@ -92,8 +92,11 @@ class OrderThingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Order Things", style: TextStyle(fontSize: 24)),
-        backgroundColor: Colors.deepPurple,
+        title: const Text(
+          "Order Things",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue,
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(20),
@@ -113,7 +116,7 @@ class OrderThingsScreen extends StatelessWidget {
                 color: option['color'],
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: const [
-                  BoxShadow(blurRadius: 6, color: Colors.black26)
+                  BoxShadow(blurRadius: 6, color: Colors.black26),
                 ],
               ),
               child: Column(
