@@ -28,19 +28,15 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
   }
 
   void _listenToNotes() {
-    userNotesRef
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen((snapshot) {
+    userNotesRef.orderBy('timestamp', descending: true).snapshots().listen((
+      snapshot,
+    ) {
       final List<Map<String, dynamic>> loadedNotes = [];
 
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
         if (data['text'] != null) {
-          loadedNotes.add({
-            'id': doc.id,
-            'text': data['text'],
-          });
+          loadedNotes.add({'id': doc.id, 'text': data['text']});
         }
       }
 
@@ -51,53 +47,58 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
   }
 
   void _addOrEditNote({String? id, String? existingText}) {
-    final TextEditingController controller =
-        TextEditingController(text: existingText ?? "");
+    final TextEditingController controller = TextEditingController(
+      text: existingText ?? "",
+    );
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(id == null ? "Add Memory Note" : "Edit Memory Note"),
-        content: TextField(
-          controller: controller,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: "Write your memory...",
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text("Cancel"),
-            onPressed: () => Navigator.pop(context),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+      builder:
+          (_) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            onPressed: () async {
-              final String text = controller.text.trim();
-              if (text.isNotEmpty) {
-                if (id == null) {
-                  // Add new note
-                  await userNotesRef.add({
-                    'text': text,
-                    'timestamp': FieldValue.serverTimestamp(),
-                  });
-                } else {
-                  // Update existing note
-                  await userNotesRef.doc(id).update({'text': text});
-                }
-              }
-              Navigator.pop(context);
-            },
-            child: const Text("Save"),
+            title: Text(id == null ? "Add Memory Note" : "Edit Memory Note"),
+            content: TextField(
+              controller: controller,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: "Write your memory...",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Cancel"),
+                onPressed: () => Navigator.pop(context),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () async {
+                  final String text = controller.text.trim();
+                  if (text.isNotEmpty) {
+                    if (id == null) {
+                      // Add new note
+                      await userNotesRef.add({
+                        'text': text,
+                        'timestamp': FieldValue.serverTimestamp(),
+                      });
+                    } else {
+                      // Update existing note
+                      await userNotesRef.doc(id).update({'text': text});
+                    }
+                  }
+                  Navigator.pop(context);
+                },
+                child: const Text("Save"),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -109,14 +110,15 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => NoteDetailScreen(
-          note: note,
-          noteId: id,
-          onDelete: _deleteNote,
-          onEdit: ({String? id, String? existingText}) {
-            _addOrEditNote(id: id, existingText: existingText);
-          },
-        ),
+        builder:
+            (_) => NoteDetailScreen(
+              note: note,
+              noteId: id,
+              onDelete: _deleteNote,
+              onEdit: ({String? id, String? existingText}) {
+                _addOrEditNote(id: id, existingText: existingText);
+              },
+            ),
       ),
     );
   }
@@ -124,18 +126,16 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
   @override
   Widget build(BuildContext context) {
     if (user == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text("User not logged in."),
-        ),
-      );
+      return const Scaffold(body: Center(child: Text("User not logged in.")));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Memory Notes"),
-        backgroundColor: const Color.fromARGB(255, 151, 126, 196),
-        centerTitle: true,
+        title: const Text(
+          "Memory Notes",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -151,41 +151,46 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
             _buildIntroCard(),
             const SizedBox(height: 24),
             Expanded(
-              child: _notes.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "📝 No notes saved yet.",
-                        style: TextStyle(
-                            fontSize: 16, fontStyle: FontStyle.italic),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _notes.length,
-                      itemBuilder: (context, index) {
-                        final note = _notes[index];
-                        return GestureDetector(
-                          onTap: () =>
-                              _showNoteDetail(note['text'], note['id']),
-                          child: Card(
-                            elevation: 4,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Text(
-                                note['text'].length > 120
-                                    ? "${note['text'].substring(0, 120)}..."
-                                    : note['text'],
-                                style: const TextStyle(
-                                    fontSize: 15, color: Colors.black87),
+              child:
+                  _notes.isEmpty
+                      ? const Center(
+                        child: Text(
+                          "📝 No notes saved yet.",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      )
+                      : ListView.builder(
+                        itemCount: _notes.length,
+                        itemBuilder: (context, index) {
+                          final note = _notes[index];
+                          return GestureDetector(
+                            onTap:
+                                () => _showNoteDetail(note['text'], note['id']),
+                            child: Card(
+                              elevation: 4,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  note['text'].length > 120
+                                      ? "${note['text'].substring(0, 120)}..."
+                                      : note['text'],
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black87,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
             ),
           ],
         ),
@@ -230,8 +235,10 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
               ),
               onPressed: () => _addOrEditNote(),
             ),

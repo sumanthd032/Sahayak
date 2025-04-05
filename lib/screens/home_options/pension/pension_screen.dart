@@ -12,15 +12,26 @@ class PensionScreen extends StatefulWidget {
 }
 
 class _PensionScreenState extends State<PensionScreen> {
-  final CollectionReference _pensionRef =
-      FirebaseFirestore.instance.collection('pensions');
+  final CollectionReference _pensionRef = FirebaseFirestore.instance.collection(
+    'pensions',
+  );
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
 
   final List<String> _months = const [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   final Color _primaryColor = Colors.blue;
@@ -40,9 +51,9 @@ class _PensionScreenState extends State<PensionScreen> {
       _uid = user.uid;
       _loadPensions();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('User not logged in')));
       Navigator.pop(context);
     }
   }
@@ -51,24 +62,27 @@ class _PensionScreenState extends State<PensionScreen> {
     setState(() => _isLoading = true);
     try {
       final snapshot = await _pensionRef.where('uid', isEqualTo: _uid).get();
-      final pensionList = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return {
-          'id': doc.id,
-          'name': data['name'],
-          'amount': data['amount'],
-          'monthlyStatus': List<bool>.from(data['monthlyStatus'] ?? List.filled(12, false)),
-        };
-      }).toList();
+      final pensionList =
+          snapshot.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return {
+              'id': doc.id,
+              'name': data['name'],
+              'amount': data['amount'],
+              'monthlyStatus': List<bool>.from(
+                data['monthlyStatus'] ?? List.filled(12, false),
+              ),
+            };
+          }).toList();
       setState(() {
         _pensions = pensionList;
         _isLoading = false;
       });
     } catch (e) {
       debugPrint('Fetch error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load pensions')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to load pensions')));
       setState(() => _isLoading = false);
     }
   }
@@ -107,9 +121,9 @@ class _PensionScreenState extends State<PensionScreen> {
       _loadPensions();
     } catch (e) {
       debugPrint('Add error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to add pension')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to add pension')));
     }
   }
 
@@ -135,47 +149,45 @@ class _PensionScreenState extends State<PensionScreen> {
       _loadPensions();
     } catch (e) {
       debugPrint('Update error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update month')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to update month')));
     }
   }
 
   void _showAddDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Add Pension'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Pension Name'),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Add Pension'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Pension Name'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _amountController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Amount'),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _nameController.clear();
-              _amountController.clear();
-              Navigator.pop(context);
-            },
-            child: const Text('Cancel'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _nameController.clear();
+                  _amountController.clear();
+                  Navigator.pop(context);
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(onPressed: _addPension, child: const Text('Add')),
+            ],
           ),
-          ElevatedButton(
-            onPressed: _addPension,
-            child: const Text('Add'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -205,7 +217,6 @@ class _PensionScreenState extends State<PensionScreen> {
     final name = pension['name'];
     final amount = pension['amount'];
     final monthlyStatus = List<bool>.from(pension['monthlyStatus']);
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       elevation: 4,
@@ -213,21 +224,8 @@ class _PensionScreenState extends State<PensionScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              name,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _primaryColor,
-              ),
-            ),
-            Text(
-              '₹ ${NumberFormat('#,##0.00', 'en_IN').format(amount)}',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: _textColor,
-              ),
-            ),
+            Text(name, style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('₹ ${NumberFormat('#,##0.00', 'en_IN').format(amount)}'),
           ],
         ),
         children: [
@@ -243,8 +241,7 @@ class _PensionScreenState extends State<PensionScreen> {
                 crossAxisSpacing: 8,
                 childAspectRatio: 3,
               ),
-              itemBuilder: (_, i) =>
-                  _buildMonthBox(id, i, monthlyStatus[i]),
+              itemBuilder: (_, i) => _buildMonthBox(id, i, monthlyStatus[i]),
             ),
           ),
           const SizedBox(height: 12),
@@ -265,23 +262,24 @@ class _PensionScreenState extends State<PensionScreen> {
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
-        backgroundColor: _primaryColor,
-        title: const Text('Pension Tracker'),
+        backgroundColor: Colors.blue,
+        title: const Text(
+          'Pension Tracker',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _showAddDialog,
-          ),
+          IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _pensions.isEmpty
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _pensions.isEmpty
               ? const Center(child: Text('No pension records found.'))
               : ListView.builder(
-                  itemCount: _pensions.length,
-                  itemBuilder: (_, index) => _buildPensionTile(_pensions[index]),
-                ),
+                itemCount: _pensions.length,
+                itemBuilder: (_, index) => _buildPensionTile(_pensions[index]),
+              ),
     );
   }
 }

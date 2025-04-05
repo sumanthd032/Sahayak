@@ -19,7 +19,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
   bool _isLoading = false;
   bool _isSpeaking = false;
 
-  final String _apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace with your key
+  final String _apiKey =
+      'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace with your key
   final FlutterTts _flutterTts = FlutterTts();
 
   String _preferredLangCode = 'en'; // default
@@ -34,7 +35,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final doc =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
         final lang = doc['preferredLanguage'] ?? 'English';
 
         // Example mapping, you can expand this
@@ -57,7 +59,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
 
   Future<String> _translateStory(String text, String targetLangCode) async {
     final url = Uri.parse(
-        'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=$targetLangCode&dt=t&q=${Uri.encodeFull(text)}');
+      'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=$targetLangCode&dt=t&q=${Uri.encodeFull(text)}',
+    );
 
     try {
       final response = await http.get(url);
@@ -79,7 +82,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
     });
 
     final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_apiKey');
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_apiKey',
+    );
 
     final headers = {'Content-Type': 'application/json'};
 
@@ -87,10 +91,10 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
       'contents': [
         {
           'parts': [
-            {'text': 'Write a creative short story based on: "$prompt"'}
-          ]
-        }
-      ]
+            {'text': 'Write a creative short story based on: "$prompt"'},
+          ],
+        },
+      ],
     });
 
     try {
@@ -125,7 +129,10 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
       _isSpeaking = true;
     });
 
-    final translated = await _translateStory(_generatedStory, _preferredLangCode);
+    final translated = await _translateStory(
+      _generatedStory,
+      _preferredLangCode,
+    );
 
     await _flutterTts.setLanguage(_preferredLangCode);
     await _flutterTts.setSpeechRate(0.5);
@@ -146,8 +153,11 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
     return Scaffold(
       backgroundColor: Colors.teal.shade50,
       appBar: AppBar(
-        title: Text('Story Zone', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.teal,
+        title: Text(
+          'Story Zone',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -174,7 +184,9 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
                     decoration: InputDecoration(
                       hintText: 'Enter your story idea...',
                       hintStyle: GoogleFonts.poppins(),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -185,7 +197,9 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ],
@@ -193,65 +207,69 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
             ),
             const SizedBox(height: 24),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.teal))
-                  : _generatedStory.isEmpty
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(color: Colors.teal),
+                      )
+                      : _generatedStory.isEmpty
                       ? Center(
-                          child: Text(
-                            'Your story will appear here...',
-                            style: GoogleFonts.poppins(color: Colors.grey),
-                          ),
-                        )
+                        child: Text(
+                          'Your story will appear here...',
+                          style: GoogleFonts.poppins(color: Colors.grey),
+                        ),
+                      )
                       : SingleChildScrollView(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.teal.shade100,
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _generatedStory,
-                                  style: GoogleFonts.poppins(fontSize: 16),
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    ElevatedButton.icon(
-                                      onPressed: _isSpeaking ? null : _speakStory,
-                                      icon: const Icon(Icons.volume_up),
-                                      label: const Text('Narrate'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green.shade600,
-                                        foregroundColor: Colors.white,
-                                      ),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.teal.shade100,
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: _isSpeaking ? null : _speakStory,
+                                    icon: const Icon(Icons.volume_up),
+                                    label: const Text('Narrate'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green.shade600,
+                                      foregroundColor: Colors.white,
                                     ),
-                                    const SizedBox(width: 16),
-                                    ElevatedButton.icon(
-                                      onPressed: _stopSpeaking,
-                                      icon: const Icon(Icons.stop),
-                                      label: const Text('Stop'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red.shade600,
-                                        foregroundColor: Colors.white,
-                                      ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: _stopSpeaking,
+                                    icon: const Icon(Icons.stop),
+                                    label: const Text('Stop'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red.shade600,
+                                      foregroundColor: Colors.white,
                                     ),
-                                  ],
-                                )
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                _generatedStory,
+                                style: GoogleFonts.poppins(fontSize: 16),
+                              ),
+                            ],
                           ),
                         ),
+                      ),
             ),
           ],
         ),

@@ -40,7 +40,7 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
       [1, 4, 7],
       [2, 5, 8],
       [0, 4, 8],
-      [2, 4, 6]
+      [2, 4, 6],
     ];
 
     for (var pattern in winPatterns) {
@@ -69,10 +69,7 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
           ),
           content: Text(
             message,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[800],
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.grey[800]),
           ),
           actions: [
             TextButton(
@@ -84,20 +81,17 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
                 });
                 Navigator.of(context).pop();
               },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.blue,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.blue),
               child: Text(
                 'Restart',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
           ],
           backgroundColor: Colors.grey[50],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
         );
       },
     );
@@ -115,13 +109,14 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.indigo,
+        backgroundColor: Colors.blue,
         elevation: 4,
         centerTitle: true,
       ),
       backgroundColor: Colors.grey[100],
       body: Center(
-        child: LayoutBuilder( // Use LayoutBuilder
+        child: LayoutBuilder(
+          // Use LayoutBuilder
           builder: (BuildContext context, BoxConstraints constraints) {
             double boardSize =
                 MediaQuery.of(context).size.width * 0.8; // 80% of screen width
@@ -158,7 +153,8 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
                       mainAxisSpacing: 8,
                     ),
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(), // Disable GridView scrolling
+                    physics:
+                        NeverScrollableScrollPhysics(), // Disable GridView scrolling
                     itemCount: 9,
                     itemBuilder: (context, index) {
                       return GestureDetector(
@@ -178,16 +174,20 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
                                 offset: Offset(0, 2),
                               ),
                             ],
-                            border: Border.all(color: Colors.grey[300]!, width: 1),
+                            border: Border.all(
+                              color: Colors.grey[300]!,
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             board[index],
                             style: TextStyle(
                               fontSize: 60,
                               fontWeight: FontWeight.w600,
-                              color: board[index] == 'X'
-                                  ? Colors.indigo
-                                  : Colors.deepOrange,
+                              color:
+                                  board[index] == 'X'
+                                      ? Colors.indigo
+                                      : Colors.deepOrange,
                             ),
                           ),
                         ),
@@ -199,9 +199,10 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
                 Text(
                   'Player $currentPlayer\'s turn',
                   style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.blueGrey[800],
-                      fontWeight: FontWeight.w500),
+                    fontSize: 24,
+                    color: Colors.blueGrey[800],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             );
