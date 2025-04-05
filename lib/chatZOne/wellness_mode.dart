@@ -72,11 +72,12 @@ class _WellnessModeScreenState extends State<WellnessModeScreen> {
       final uid = _auth.currentUser?.uid;
       if (uid == null) return;
 
-      final snapshot = await _firestore
-          .collection('wellness_chats')
-          .where('uid', isEqualTo: uid)
-          .orderBy('timestamp')
-          .get();
+      final snapshot =
+          await _firestore
+              .collection('wellness_chats')
+              .where('uid', isEqualTo: uid)
+              .orderBy('timestamp')
+              .get();
 
       setState(() {
         chatHistory = snapshot.docs.map((doc) => doc.data()).toList();
@@ -134,60 +135,74 @@ class _WellnessModeScreenState extends State<WellnessModeScreen> {
   }
 
   Future<String> _generateResponse(String input) async {
-  const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
-  const apiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
+    const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
+    const apiUrl =
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
-  final disallowedTopics = [
-    'programming', 'flutter', 'dart', 'code', 'math',
-    'science', 'physics', 'java', 'algorithm'
-  ];
+    final disallowedTopics = [
+      'programming',
+      'flutter',
+      'dart',
+      'code',
+      'math',
+      'science',
+      'physics',
+      'java',
+      'algorithm',
+    ];
 
-  if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
-    return "I'm here to help you feel better. Please ask questions related to wellness only.";
-  }
+    if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
+      return "I'm here to help you feel better. Please ask questions related to wellness only.";
+    }
 
-final systemPrompt = '''
+    final systemPrompt = '''
 You are a compassionate mental wellness assistant for senior citizens.Be specific dont talk much, be simple and on to point just like real person.
 Only answer queries related to mental health, emotional support, mindfulness, stress, anxiety, positivity, and overall wellbeing. Please answer in user-specified language $preferredLanguage.
 If the user asks unrelated questions, kindly say: "I'm here to help you feel better. Please ask questions related to wellness only."
 ''';
 
-  final List<Map<String, dynamic>> messages = [
-    {
-      'role': 'user',
-      'parts': [{'text': systemPrompt}]
-    },
-    {
-      'role': 'user',
-      'parts': [{'text': input}]
-    }
-  ];
+    final List<Map<String, dynamic>> messages = [
+      {
+        'role': 'user',
+        'parts': [
+          {'text': systemPrompt},
+        ],
+      },
+      {
+        'role': 'user',
+        'parts': [
+          {'text': input},
+        ],
+      },
+    ];
 
-  try {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'contents': messages}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'contents': messages}),
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-      final text = responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
-      return text ?? 'Sorry, I could not understand the response.';
-    } else {
-      print("Response Error: ${response.body}");
-      return 'Sorry, something went wrong while getting a response.';
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        final text =
+            responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
+        return text ?? 'Sorry, I could not understand the response.';
+      } else {
+        print("Response Error: ${response.body}");
+        return 'Sorry, something went wrong while getting a response.';
+      }
+    } catch (e) {
+      print("Exception: $e");
+      return 'An error occurred while generating a response.';
     }
-  } catch (e) {
-    print("Exception: $e");
-    return 'An error occurred while generating a response.';
   }
-}
-
 
   void _startListening() async {
     if (!_speechAvailable) return;
+
+    // Stop any ongoing TTS when mic is activated
+    await _flutterTts.stop();
 
     if (!_isListening) {
       setState(() {
@@ -248,9 +263,10 @@ If the user asks unrelated questions, kindly say: "I'm here to help you feel bet
                   alignment:
                       isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Column(
-                    crossAxisAlignment: isUser
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
                     children: [
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -272,7 +288,9 @@ If the user asks unrelated questions, kindly say: "I'm here to help you feel bet
                         child: Text(
                           _formatTimestamp(timestamp),
                           style: const TextStyle(
-                              fontSize: 10, color: Colors.grey),
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ],
@@ -307,9 +325,10 @@ If the user asks unrelated questions, kindly say: "I'm here to help you feel bet
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: _isLoadingResponse
-                      ? null
-                      : () => _sendMessage(_controller.text),
+                  onPressed:
+                      _isLoadingResponse
+                          ? null
+                          : () => _sendMessage(_controller.text),
                   color: Colors.pinkAccent,
                 ),
               ],

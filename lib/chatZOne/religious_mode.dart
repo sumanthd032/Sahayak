@@ -72,11 +72,12 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
       final uid = _auth.currentUser?.uid;
       if (uid == null) return;
 
-      final snapshot = await _firestore
-          .collection('religious_chats')
-          .where('uid', isEqualTo: uid)
-          .orderBy('timestamp')
-          .get();
+      final snapshot =
+          await _firestore
+              .collection('religious_chats')
+              .where('uid', isEqualTo: uid)
+              .orderBy('timestamp')
+              .get();
 
       setState(() {
         chatHistory = snapshot.docs.map((doc) => doc.data()).toList();
@@ -134,60 +135,74 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
   }
 
   Future<String> _generateResponse(String input) async {
-  const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
-  const apiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
+    const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
+    const apiUrl =
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
-  final disallowedTopics = [
-    'programming', 'flutter', 'dart', 'code', 'math',
-    'science', 'physics', 'java', 'algorithm'
-  ];
+    final disallowedTopics = [
+      'programming',
+      'flutter',
+      'dart',
+      'code',
+      'math',
+      'science',
+      'physics',
+      'java',
+      'algorithm',
+    ];
 
-  if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
-    return "I'm here to help you feel better. Please ask questions related to wellness only.";
-  }
+    if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
+      return "I'm here to help you feel better. Please ask questions related to wellness only.";
+    }
 
-final systemPrompt = '''
+    final systemPrompt = '''
 You are a compassionate spiritual companion for senior citizens. Only respond to queries about religion, spirituality, peace, faith, prayer, or guidance for the soul. Keep responses kind, simple, short and comforting.when it is needed give lengthy replies also]
 Avoid discussing programming, technology, or science. Please respond in user-specified language: $preferredLanguage.
 If user asks unrelated questions, say: "I'm here to offer spiritual guidance and peace. Please ask questions related to faith, belief, or inner peace.
 ''';
 
-  final List<Map<String, dynamic>> messages = [
-    {
-      'role': 'user',
-      'parts': [{'text': systemPrompt}]
-    },
-    {
-      'role': 'user',
-      'parts': [{'text': input}]
-    }
-  ];
+    final List<Map<String, dynamic>> messages = [
+      {
+        'role': 'user',
+        'parts': [
+          {'text': systemPrompt},
+        ],
+      },
+      {
+        'role': 'user',
+        'parts': [
+          {'text': input},
+        ],
+      },
+    ];
 
-  try {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'contents': messages}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'contents': messages}),
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-      final text = responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
-      return text ?? 'Sorry, I could not understand the response.';
-    } else {
-      print("Response Error: ${response.body}");
-      return 'Sorry, something went wrong while getting a response.';
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        final text =
+            responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
+        return text ?? 'Sorry, I could not understand the response.';
+      } else {
+        print("Response Error: ${response.body}");
+        return 'Sorry, something went wrong while getting a response.';
+      }
+    } catch (e) {
+      print("Exception: $e");
+      return 'An error occurred while generating a response.';
     }
-  } catch (e) {
-    print("Exception: $e");
-    return 'An error occurred while generating a response.';
   }
-}
-
 
   void _startListening() async {
     if (!_speechAvailable) return;
+
+    // Stop any ongoing TTS when mic is activated
+    await _flutterTts.stop();
 
     if (!_isListening) {
       setState(() {
@@ -226,8 +241,11 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
     return Scaffold(
       backgroundColor: Colors.lightBlue.shade50,
       appBar: AppBar(
-        title: Text('Religious Mode', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.indigo,
+        title: Text(
+          'Religious Mode',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.green,
       ),
       body: Column(
         children: [
@@ -242,10 +260,13 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
                 final timestamp = chat['timestamp'] as Timestamp;
 
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Column(
                     crossAxisAlignment:
-                        isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
                     children: [
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -265,7 +286,10 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
                         padding: const EdgeInsets.only(bottom: 4, left: 4),
                         child: Text(
                           _formatTimestamp(timestamp),
-                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ],
@@ -300,8 +324,11 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: _isLoadingResponse ? null : () => _sendMessage(_controller.text),
-                  color: Colors.indigo,
+                  onPressed:
+                      _isLoadingResponse
+                          ? null
+                          : () => _sendMessage(_controller.text),
+                  color: Colors.green,
                 ),
               ],
             ),
@@ -313,7 +340,7 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.indigo,
+                color: _isListening ? Colors.red : Colors.green,
               ),
             ),
           ),

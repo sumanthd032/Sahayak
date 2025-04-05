@@ -198,6 +198,9 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
   void _startListening() async {
     if (!_speechAvailable) return;
 
+    // Stop any ongoing TTS when mic is activated
+    await _flutterTts.stop();
+
     if (!_isListening) {
       setState(() {
         _isListening = true;
@@ -239,7 +242,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
           'Normal Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color.fromARGB(255, 127, 134, 173),
+        backgroundColor: Colors.blue,
       ),
       body: Column(
         children: [
@@ -322,7 +325,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
                       _isLoadingResponse
                           ? null
                           : () => _sendMessage(_controller.text),
-                  color: Colors.indigo,
+                  color: Colors.blue,
                 ),
               ],
             ),
@@ -334,7 +337,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.indigo,
+                color: _isListening ? Colors.red : Colors.blue,
               ),
             ),
           ),

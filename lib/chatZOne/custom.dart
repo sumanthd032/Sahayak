@@ -193,8 +193,14 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
   void _startListening() async {
     if (!_speechAvailable) return;
 
+    // Stop any ongoing TTS when mic is activated
+    await _flutterTts.stop();
+
     if (!_isListening) {
-      setState(() => _isListening = true);
+      setState(() {
+        _isListening = true;
+      });
+
       await _speechToText.listen(
         localeId: preferredLanguage,
         onResult: (result) {
@@ -223,7 +229,7 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
           'Custom Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.deepPurple.shade400,
+        backgroundColor: Colors.purple,
       ),
       body: Column(
         children: [
@@ -241,9 +247,10 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
                   alignment:
                       isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Column(
-                    crossAxisAlignment: isUser
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
                     children: [
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -301,10 +308,11 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: _isLoadingResponse
-                      ? null
-                      : () => _sendMessage(_controller.text),
-                  color: Colors.deepPurple,
+                  onPressed:
+                      _isLoadingResponse
+                          ? null
+                          : () => _sendMessage(_controller.text),
+                  color: Colors.purple,
                 ),
               ],
             ),
@@ -316,7 +324,7 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.deepPurple,
+                color: _isListening ? Colors.red : Colors.purple,
               ),
             ),
           ),
