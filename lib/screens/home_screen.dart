@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sahayak/screens/chatZone_screen.dart';
-import 'package:sahayak/screens/community_screen.dart';
+import 'package:sahayak/screens/community/community_screen.dart';
 import 'package:sahayak/screens/home_options/contacts/contacts_screen.dart';
 import 'package:sahayak/screens/home_options/emergency/emergency.dart';
 import 'package:sahayak/screens/home_options/fun%20zone/splash_screen.dart';
@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _tabs = [
     const Placeholder(),       // Home tab
-    const CommunityScreen(),       // Community tab
+    CommunityScreen(),       // Community tab
     ChatZoneScreen(),          // ChatZone screen
     const ProfileScreen(),     // Profile screen
   ];
