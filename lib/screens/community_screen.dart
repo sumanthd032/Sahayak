@@ -3,10 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    home: CommunityScreen(),
-    debugShowCheckedModeBanner: false,
-  ));
+  runApp(
+    const MaterialApp(
+      home: CommunityScreen(),
+      debugShowCheckedModeBanner: false,
+    ),
+  );
 }
 
 class CommunityScreen extends StatefulWidget {
@@ -17,8 +19,10 @@ class CommunityScreen extends StatefulWidget {
 }
 
 class _CommunityScreenState extends State<CommunityScreen> {
-  final TextEditingController _communityNameController = TextEditingController();
-  final TextEditingController _communityDescriptionController = TextEditingController();
+  final TextEditingController _communityNameController =
+      TextEditingController();
+  final TextEditingController _communityDescriptionController =
+      TextEditingController();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -41,7 +45,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
     try {
       final User? user = _auth.currentUser;
       if (user != null) {
-        final String communityId = _firestore.collection('communities').doc().id;
+        final String communityId =
+            _firestore.collection('communities').doc().id;
         final Color randomColor = Color.fromARGB(
           255,
           150 + (DateTime.now().millisecond % 106),
@@ -65,24 +70,27 @@ class _CommunityScreenState extends State<CommunityScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating community: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error creating community: $e')));
     }
   }
 
   Future<void> _joinCommunity(String communityId) async {
     final User? user = _auth.currentUser;
     if (user != null) {
-      final DocumentReference communityRef =
-          _firestore.collection('communities').doc(communityId);
+      final DocumentReference communityRef = _firestore
+          .collection('communities')
+          .doc(communityId);
 
       _firestore.runTransaction((transaction) async {
         final DocumentSnapshot snapshot = await transaction.get(communityRef);
         if (!snapshot.exists) throw Exception("Community does not exist!");
 
         final List<String> members =
-            (snapshot.data() as Map<String, dynamic>)['members']?.cast<String>() ?? [];
+            (snapshot.data() as Map<String, dynamic>)['members']
+                ?.cast<String>() ??
+            [];
 
         if (!members.contains(user.uid)) {
           transaction.update(communityRef, {
@@ -94,7 +102,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
           setState(() {});
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You are already a member of this community.')),
+            const SnackBar(
+              content: Text('You are already a member of this community.'),
+            ),
           );
         }
       });
@@ -117,7 +127,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
               const SizedBox(height: 10),
               TextField(
                 controller: _communityDescriptionController,
-                decoration: const InputDecoration(labelText: 'Description (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                ),
               ),
             ],
           ),
@@ -140,10 +152,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatScreen(
-          communityId: communityId,
-          communityName: communityName,
-        ),
+        builder:
+            (context) => ChatScreen(
+              communityId: communityId,
+              communityName: communityName,
+            ),
       ),
     );
   }
@@ -155,17 +168,22 @@ class _CommunityScreenState extends State<CommunityScreen> {
     final String colorHex = data['colorHex'] ?? 'ff9e9e9e';
 
     final int colorValue = int.tryParse(colorHex, radix: 16) ?? 0xFF9E9E9E;
-    final Color communityColor = Color(colorValue | 0xFF000000); // Ensure full opacity
+    final Color communityColor = Color(
+      colorValue | 0xFF000000,
+    ); // Ensure full opacity
 
     return GestureDetector(
       onTap: () {
         final User? user = _auth.currentUser;
-        final List<String> members = (data['members'] as List<dynamic>?)?.cast<String>() ?? [];
+        final List<String> members =
+            (data['members'] as List<dynamic>?)?.cast<String>() ?? [];
         if (user != null && members.contains(user.uid)) {
           _navigateToChatScreen(community.id, name);
         } else if (user != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Join the community to start chatting.')),
+            const SnackBar(
+              content: Text('Join the community to start chatting.'),
+            ),
           );
         }
       },
@@ -180,12 +198,19 @@ class _CommunityScreenState extends State<CommunityScreen> {
           children: [
             Text(
               name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color.fromARGB(255, 17, 16, 16)),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Color.fromARGB(255, 17, 16, 16),
+              ),
             ),
             const SizedBox(height: 5),
             Text(
               description,
-              style: TextStyle(fontSize: 14, color: const Color.fromARGB(255, 73, 62, 62).withOpacity(0.8)),
+              style: TextStyle(
+                fontSize: 14,
+                color: const Color.fromARGB(255, 73, 62, 62).withOpacity(0.8),
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -204,7 +229,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Community'),
+        backgroundColor: Colors.blue,
+        title: const Text(
+          'Community',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -217,7 +246,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
         child: StreamBuilder<QuerySnapshot>(
           stream: _firestore.collection('communities').snapshots(),
           builder: (context, snapshot) {
-            if (snapshot.hasError) return const Center(child: Text('Something went wrong'));
+            if (snapshot.hasError)
+              return const Center(child: Text('Something went wrong'));
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -269,11 +299,11 @@ class _ChatScreenState extends State<ChatScreen> {
           .doc(widget.communityId)
           .collection('messages')
           .add({
-        'text': _messageController.text.trim(),
-        'senderId': user.uid,
-        'senderName': user.displayName ?? 'Anonymous',
-        'timestamp': Timestamp.now(),
-      });
+            'text': _messageController.text.trim(),
+            'senderId': user.uid,
+            'senderName': user.displayName ?? 'Anonymous',
+            'timestamp': Timestamp.now(),
+          });
       _messageController.clear();
     }
   }
@@ -281,21 +311,21 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.communityName),
-      ),
+      appBar: AppBar(title: Text(widget.communityName)),
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore
-                  .collection('communities')
-                  .doc(widget.communityId)
-                  .collection('messages')
-                  .orderBy('timestamp')
-                  .snapshots(),
+              stream:
+                  _firestore
+                      .collection('communities')
+                      .doc(widget.communityId)
+                      .collection('messages')
+                      .orderBy('timestamp')
+                      .snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.hasError) return const Center(child: Text('Error loading messages.'));
+                if (snapshot.hasError)
+                  return const Center(child: Text('Error loading messages.'));
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }

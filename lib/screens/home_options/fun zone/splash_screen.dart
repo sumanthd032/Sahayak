@@ -10,10 +10,9 @@ class SplashScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Fun Zone',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue,
         elevation: 4,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -52,10 +51,7 @@ class SplashScreen extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  'assets/tic-tac-toe.png',
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset('assets/tic-tac-toe.png', fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 40),
@@ -71,10 +67,16 @@ class SplashScreen extends StatelessWidget {
               icon: const Icon(Icons.play_arrow),
               label: const Text("Play Now"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),

@@ -53,11 +53,8 @@ class ChatZoneScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "ChatZone",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.deepPurple,
+        title: Text("ChatZone", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
         elevation: 0,
       ),
       body: Container(
