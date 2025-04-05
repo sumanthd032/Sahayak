@@ -74,7 +74,7 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: Colors.blue,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
@@ -134,7 +134,7 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Memory Notes"),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: const Color.fromARGB(255, 151, 126, 196),
         centerTitle: true,
       ),
       body: Container(
@@ -202,7 +202,7 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepPurple.shade100,
+            color: const Color.fromARGB(255, 174, 154, 211),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -226,7 +226,7 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
               icon: const Icon(Icons.add),
               label: const Text("Add Note"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: const Color.fromARGB(255, 110, 228, 202),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),

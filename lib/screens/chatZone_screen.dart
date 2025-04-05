@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sahayak/chatZOne/custom.dart';
 import 'package:sahayak/chatZOne/general_knowledge.dart';
+import 'package:sahayak/chatZOne/normal.dart';
 import 'package:sahayak/chatZOne/religious_mode.dart';
 import 'package:sahayak/chatZOne/travel_mode.dart';
 import 'package:sahayak/chatZOne/wellness_mode.dart';
@@ -90,11 +92,27 @@ class ChatZoneScreen extends StatelessWidget {
                       ),
                     );
                   }
+                  if (mode['title'] == 'Normal Mode') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NormalMOdeSCreen(),
+                      ),
+                    );
+                  }
                   if (mode['title'] == 'Travel Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => TravelModeScreen(),
+                      ),
+                    );
+                  }
+                  if (mode['title'] == 'Custom Mode') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CustomModeScreen(),
                       ),
                     );
                   }
@@ -108,7 +126,7 @@ class ChatZoneScreen extends StatelessWidget {
                   }
                   // Add other mode navigations similarly
                 },
-                
+
                 child: Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
