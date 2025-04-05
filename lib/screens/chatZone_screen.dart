@@ -103,9 +103,7 @@ class ChatZoneScreen extends StatelessWidget {
                   if (mode['title'] == 'Travel Mode') {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => TravelModeScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => TravelMode()),
                     );
                   }
                   if (mode['title'] == 'Custom Mode') {

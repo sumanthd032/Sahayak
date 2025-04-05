@@ -7,14 +7,14 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class TravelModeScreen extends StatefulWidget {
-  const TravelModeScreen({Key? key}) : super(key: key);
+class TravelMode extends StatefulWidget {
+  const TravelMode({Key? key}) : super(key: key);
 
   @override
-  State<TravelModeScreen> createState() => _TravelModeScreenState();
+  State<TravelMode> createState() => _TravelModeState();
 }
 
-class _TravelModeScreenState extends State<TravelModeScreen> {
+class _TravelModeState extends State<TravelMode> {
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -40,41 +40,55 @@ class _TravelModeScreenState extends State<TravelModeScreen> {
     _speechAvailable = await _speechToText.initialize(
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
-          setState(() => _isListening = false);
+          setState(() {
+            _isListening = false;
+          });
         }
       },
-      onError: (error) => setState(() => _isListening = false),
+      onError: (error) {
+        setState(() => _isListening = false);
+      },
     );
+
     await _flutterTts.setLanguage(preferredLanguage);
   }
 
   Future<void> _fetchPreferredLanguage() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
-    final userDoc = await _firestore.collection('users').doc(uid).get();
-    if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
-      setState(() {
-        preferredLanguage = userDoc.data()!['preferredLanguage'];
-      });
-    }
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid == null) return;
+
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
+        setState(() {
+          preferredLanguage = userDoc.data()!['preferredLanguage'];
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchChatHistory() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
-    final snapshot = await _firestore
-        .collection('travel_chats')
-        .where('uid', isEqualTo: uid)
-        .orderBy('timestamp')
-        .get();
-    setState(() {
-      chatHistory = snapshot.docs.map((doc) => doc.data()).toList();
-    });
-    _scrollToBottom();
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid == null) return;
+
+      final snapshot =
+          await _firestore
+              .collection('travel_chats')
+              .where('uid', isEqualTo: uid)
+              .orderBy('timestamp')
+              .get();
+
+      setState(() {
+        chatHistory = snapshot.docs.map((doc) => doc.data()).toList();
+      });
+      _scrollToBottom();
+    } catch (_) {}
   }
 
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty || _isLoadingResponse) return;
+
     FocusScope.of(context).unfocus();
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
@@ -92,24 +106,32 @@ class _TravelModeScreenState extends State<TravelModeScreen> {
       _isLoadingResponse = true;
     });
     _scrollToBottom();
-    await _firestore.collection('travel_chats').add(userMsg);
 
-    final responseText = await _generateResponse(message);
+    try {
+      await _firestore.collection('travel_chats').add(userMsg);
 
-    final botMsg = {
-      'uid': uid,
-      'sender': 'bot',
-      'message': responseText,
-      'timestamp': Timestamp.now(),
-    };
+      final responseText = await _generateResponse(message);
 
-    setState(() {
-      chatHistory.add(botMsg);
-      _isLoadingResponse = false;
-    });
-    _scrollToBottom();
-    await _firestore.collection('travel_chats').add(botMsg);
-    await _flutterTts.speak(responseText);
+      final botMsg = {
+        'uid': uid,
+        'sender': 'bot',
+        'message': responseText,
+        'timestamp': Timestamp.now(),
+      };
+
+      setState(() {
+        chatHistory.add(botMsg);
+        _isLoadingResponse = false;
+      });
+      _scrollToBottom();
+
+      await _firestore.collection('travel_chats').add(botMsg);
+
+      await _flutterTts.setLanguage(preferredLanguage);
+      await _flutterTts.speak(responseText);
+    } catch (_) {
+      setState(() => _isLoadingResponse = false);
+    }
   }
 
   Future<String> _generateResponse(String input) async {
@@ -118,27 +140,37 @@ class _TravelModeScreenState extends State<TravelModeScreen> {
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
     final disallowedTopics = [
-      'science', 'math', 'ai', 'religion', 'flutter', 'programming',
+      'programming',
+      'flutter',
+      'dart',
+      'code',
+      'math',
+      'science',
+      'physics',
+      'java',
+      'algorithm',
     ];
 
     if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
-      return "I'm here to assist with travel-related questions. Please ask about travel only.";
+      return "I'm here to help you feel better. Please ask questions related to wellness only.";
     }
 
-    final systemPrompt = '''
-You are a friendly travel assistant. Help the user with travel tips, destination suggestions, local insights, safety tips, cultural advice, and travel planning.
-Avoid topics unrelated to travel. Respond clearly and concisely in user's preferred language: $preferredLanguage.
-''';
+    final systemPrompt =
+        ''' You are travel assistant, answer to user's question in a travel way.''';
 
     final List<Map<String, dynamic>> messages = [
       {
         'role': 'user',
-        'parts': [{'text': systemPrompt}]
+        'parts': [
+          {'text': systemPrompt},
+        ],
       },
       {
         'role': 'user',
-        'parts': [{'text': input}]
-      }
+        'parts': [
+          {'text': input},
+        ],
+      },
     ];
 
     try {
@@ -147,22 +179,30 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'contents': messages}),
       );
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['candidates']?[0]?['content']?['parts']?[0]?['text'] ??
-            'Sorry, I could not understand that.';
+        final responseData = jsonDecode(response.body);
+        final text =
+            responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
+        return text ?? 'Sorry, I could not understand the response.';
       } else {
-        return 'Sorry, something went wrong.';
+        print("Response Error: ${response.body}");
+        return 'Sorry, something went wrong while getting a response.';
       }
-    } catch (_) {
+    } catch (e) {
+      print("Exception: $e");
       return 'An error occurred while generating a response.';
     }
   }
 
   void _startListening() async {
     if (!_speechAvailable) return;
+
     if (!_isListening) {
-      setState(() => _isListening = true);
+      setState(() {
+        _isListening = true;
+      });
+
       await _speechToText.listen(
         localeId: preferredLanguage,
         onResult: (result) {
@@ -193,13 +233,13 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlue.shade50,
+      backgroundColor: Colors.blueGrey.shade50,
       appBar: AppBar(
         title: Text(
-          'Travel Mode',
+          'travel Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color.fromARGB(255, 127, 134, 173),
       ),
       body: Column(
         children: [
@@ -212,21 +252,21 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
                 final chat = chatHistory[index];
                 final isUser = chat['sender'] == 'user';
                 final timestamp = chat['timestamp'] as Timestamp;
+
                 return Align(
                   alignment:
                       isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Column(
-                    crossAxisAlignment: isUser
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
                     children: [
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isUser
-                              ? Colors.blueAccent
-                              : Colors.grey.shade200,
+                          color: isUser ? Colors.indigo : Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -241,7 +281,9 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
                         child: Text(
                           _formatTimestamp(timestamp),
                           style: const TextStyle(
-                              fontSize: 10, color: Colors.grey),
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ],
@@ -253,7 +295,7 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
           if (_isLoadingResponse)
             const Padding(
               padding: EdgeInsets.only(bottom: 12),
-              child: CircularProgressIndicator(color: Colors.blueAccent),
+              child: CircularProgressIndicator(color: Colors.indigo),
             ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -264,7 +306,7 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
                     controller: _controller,
                     enabled: !_isLoadingResponse,
                     decoration: InputDecoration(
-                      hintText: 'Ask about travel, places, tips...',
+                      hintText: 'Ask anything you needed...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -276,10 +318,11 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: _isLoadingResponse
-                      ? null
-                      : () => _sendMessage(_controller.text),
-                  color: Colors.blueAccent,
+                  onPressed:
+                      _isLoadingResponse
+                          ? null
+                          : () => _sendMessage(_controller.text),
+                  color: Colors.indigo,
                 ),
               ],
             ),
@@ -291,7 +334,7 @@ Avoid topics unrelated to travel. Respond clearly and concisely in user's prefer
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.blueAccent,
+                color: _isListening ? Colors.red : Colors.indigo,
               ),
             ),
           ),
