@@ -19,7 +19,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
   bool _isLoading = false;
   bool _isSpeaking = false;
 
-  final String _apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace with your actual API key
+  final String _apiKey =
+      'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace with your actual API key
   final FlutterTts _flutterTts = FlutterTts();
   String _preferredLangCode = 'en'; // Default to English
 
@@ -33,7 +34,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final doc =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
         final lang = doc['preferred_language'] ?? 'en';
         setState(() {
           _preferredLangCode = lang;
@@ -84,7 +86,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
         });
       } else {
         setState(() {
-          _generatedStory = 'Failed to generate story: ${data['error']?['message'] ?? "Unknown error"}';
+          _generatedStory =
+              'Failed to generate story: ${data['error']?['message'] ?? "Unknown error"}';
           _isLoading = false;
         });
       }
@@ -120,13 +123,16 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink.shade50,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Story Zone',
-          style: GoogleFonts.balooBhai2(fontSize: 26, fontWeight: FontWeight.bold),
+          style: GoogleFonts.balooBhai2(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: Colors.blue,
         elevation: 4,
       ),
       body: Padding(
@@ -134,9 +140,11 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
         child: Column(
           children: [
             Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 6,
-              shadowColor: Colors.deepPurple.shade100,
+              shadowColor: Colors.deepPurple,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -147,16 +155,21 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
                         prefixIcon: const Icon(Icons.lightbulb_outline),
                         hintText: 'Enter a fun story idea...',
                         hintStyle: GoogleFonts.poppins(),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: _isLoading ? null : _generateStory,
                       icon: const Icon(Icons.auto_stories),
-                      label: Text('Generate Story', style: GoogleFonts.poppins()),
+                      label: Text(
+                        'Generate Story',
+                        style: GoogleFonts.poppins(),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -169,65 +182,71 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.deepPurple))
-                  : _generatedStory.isEmpty
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(color: Colors.blue),
+                      )
+                      : _generatedStory.isEmpty
                       ? Center(
-                          child: Text(
-                            'Your magical story will appear here!',
-                            style: GoogleFonts.poppins(color: Colors.grey, fontSize: 16),
+                        child: Text(
+                          'Your magical story will appear here!',
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey,
+                            fontSize: 16,
                           ),
-                        )
+                        ),
+                      )
                       : Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.deepPurple.shade100,
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                                offset: const Offset(0, 5),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.deepPurple.shade100,
+                              blurRadius: 12,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: _isSpeaking ? null : _speakStory,
+                                    icon: const Icon(Icons.volume_up),
+                                    label: const Text('Narrate'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: _stopSpeaking,
+                                    icon: const Icon(Icons.stop),
+                                    label: const Text('Stop'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _generatedStory,
+                                style: GoogleFonts.poppins(fontSize: 16),
                               ),
                             ],
                           ),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton.icon(
-                                      onPressed: _isSpeaking ? null : _speakStory,
-                                      icon: const Icon(Icons.volume_up),
-                                      label: const Text('Narrate'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    ElevatedButton.icon(
-                                      onPressed: _stopSpeaking,
-                                      icon: const Icon(Icons.stop),
-                                      label: const Text('Stop'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _generatedStory,
-                                  style: GoogleFonts.poppins(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
+                      ),
             ),
           ],
         ),

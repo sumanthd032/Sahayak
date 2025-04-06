@@ -28,7 +28,9 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
   }
 
   void _listenToNotes() {
-    userNotesRef.orderBy('timestamp', descending: true).snapshots().listen((snapshot) {
+    userNotesRef.orderBy('timestamp', descending: true).snapshots().listen((
+      snapshot,
+    ) {
       final List<Map<String, dynamic>> loadedNotes = [];
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
@@ -47,92 +49,111 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
     });
   }
 
-  void _addOrEditNote({String? id, String? existingTitle, String? existingText, bool isSensitive = false}) {
-    final TextEditingController titleController = TextEditingController(text: existingTitle ?? "");
-    final TextEditingController textController = TextEditingController(text: existingText ?? "");
+  void _addOrEditNote({
+    String? id,
+    String? existingTitle,
+    String? existingText,
+    bool isSensitive = false,
+  }) {
+    final TextEditingController titleController = TextEditingController(
+      text: existingTitle ?? "",
+    );
+    final TextEditingController textController = TextEditingController(
+      text: existingText ?? "",
+    );
     bool _isSensitive = isSensitive;
 
     showDialog(
       context: context,
-      builder: (_) => StatefulBuilder(builder: (context, setStateDialog) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
-            id == null ? "✨ Add Memory Note" : "🛠️ Edit Memory Note",
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: "Title",
-                    border: OutlineInputBorder(),
+      builder:
+          (_) => StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: Text(
+                  id == null ? "✨ Add Memory Note" : "🛠️ Edit Memory Note",
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                ),
+                content: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: titleController,
+                        decoration: const InputDecoration(
+                          labelText: "Title",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: textController,
+                        maxLines: 4,
+                        decoration: const InputDecoration(
+                          labelText: "Write your memory...",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _isSensitive,
+                            onChanged: (value) {
+                              setStateDialog(() {
+                                _isSensitive = value ?? false;
+                              });
+                            },
+                          ),
+                          const Text("Mark as Sensitive"),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: textController,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: "Write your memory...",
-                    border: OutlineInputBorder(),
+                actions: [
+                  TextButton(
+                    child: Text("Cancel", style: GoogleFonts.poppins()),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _isSensitive,
-                      onChanged: (value) {
-                        setStateDialog(() {
-                          _isSensitive = value ?? false;
-                        });
-                      },
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    const Text("Mark as Sensitive"),
-                  ],
-                ),
-              ],
-            ),
+                    onPressed: () async {
+                      final String title = titleController.text.trim();
+                      final String text = textController.text.trim();
+                      if (title.isNotEmpty && text.isNotEmpty) {
+                        if (id == null) {
+                          await userNotesRef.add({
+                            'title': title,
+                            'text': text,
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'isSensitive': _isSensitive,
+                          });
+                        } else {
+                          await userNotesRef.doc(id).update({
+                            'title': title,
+                            'text': text,
+                            'isSensitive': _isSensitive,
+                          });
+                        }
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      "Save",
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          actions: [
-            TextButton(
-              child: Text("Cancel", style: GoogleFonts.poppins()),
-              onPressed: () => Navigator.pop(context),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: () async {
-                final String title = titleController.text.trim();
-                final String text = textController.text.trim();
-                if (title.isNotEmpty && text.isNotEmpty) {
-                  if (id == null) {
-                    await userNotesRef.add({
-                      'title': title,
-                      'text': text,
-                      'timestamp': FieldValue.serverTimestamp(),
-                      'isSensitive': _isSensitive,
-                    });
-                  } else {
-                    await userNotesRef.doc(id).update({
-                      'title': title,
-                      'text': text,
-                      'isSensitive': _isSensitive,
-                    });
-                  }
-                }
-                Navigator.pop(context);
-              },
-              child: Text("Save", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      }),
     );
   }
 
@@ -140,7 +161,12 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => NoteDetailScreen(title: title, text: text, isSensitive: isSensitive),
+        builder:
+            (_) => NoteDetailScreen(
+              title: title,
+              text: text,
+              isSensitive: isSensitive,
+            ),
       ),
     );
   }
@@ -158,79 +184,90 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           textAlign: TextAlign.center,
         ),
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: Colors.blue,
       ),
       body: Container(
-        
-        color: Colors.pink.shade50,
+        color: Colors.white,
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             _buildIntroCard(),
             const SizedBox(height: 24),
             Expanded(
-              child: _notes.isEmpty
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.note_alt_outlined, size: 70, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(
-                          "No memory notes yet.",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[700],
+              child:
+                  _notes.isEmpty
+                      ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.note_alt_outlined,
+                            size: 70,
+                            color: Colors.grey,
                           ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      itemCount: _notes.length,
-                      itemBuilder: (context, index) {
-                        final note = _notes[index];
-                        final bool isSensitive = note['isSensitive'] ?? false;
-
-                        return GestureDetector(
-                          onTap: () => _openNoteDetail(
-                            note['title'],
-                            note['text'],
-                            isSensitive,
-                          ),
-                          onLongPress: () {
-                            _addOrEditNote(
-                              id: note['id'],
-                              existingTitle: note['title'],
-                              existingText: note['text'],
-                              isSensitive: isSensitive,
-                            );
-                          },
-                          child: Card(
-                            color: Colors.white,
-                            elevation: 5,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                          const SizedBox(height: 16),
+                          Text(
+                            "No memory notes yet.",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[700],
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      note['title'],
-                                      style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      )
+                      : ListView.builder(
+                        itemCount: _notes.length,
+                        itemBuilder: (context, index) {
+                          final note = _notes[index];
+                          final bool isSensitive = note['isSensitive'] ?? false;
+
+                          return GestureDetector(
+                            onTap:
+                                () => _openNoteDetail(
+                                  note['title'],
+                                  note['text'],
+                                  isSensitive,
+                                ),
+                            onLongPress: () {
+                              _addOrEditNote(
+                                id: note['id'],
+                                existingTitle: note['title'],
+                                existingText: note['text'],
+                                isSensitive: isSensitive,
+                              );
+                            },
+                            child: Card(
+                              color: const Color.fromARGB(255, 166, 204, 223),
+                              elevation: 5,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        note['title'],
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  if (isSensitive)
-                                    const Icon(Icons.lock, color: Colors.redAccent),
-                                ],
+                                    if (isSensitive)
+                                      const Icon(
+                                        Icons.lock,
+                                        color: Colors.redAccent,
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
             ),
           ],
         ),
@@ -258,7 +295,10 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
         children: [
           Text(
             "🧠 What are Memory Notes?",
-            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -275,7 +315,10 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
               ),
               onPressed: () => _addOrEditNote(),
             ),
@@ -302,7 +345,10 @@ class NoteDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Note Detail", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text(
+          "Note Detail",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: Colors.deepPurpleAccent,
       ),
       body: SingleChildScrollView(
@@ -312,22 +358,26 @@ class NoteDetailScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.sticky_note_2_rounded, color: Colors.deepPurple),
+                const Icon(
+                  Icons.sticky_note_2_rounded,
+                  color: Colors.deepPurple,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     title,
-                    style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                if (isSensitive) const Icon(Icons.lock, color: Colors.redAccent),
+                if (isSensitive)
+                  const Icon(Icons.lock, color: Colors.redAccent),
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              text,
-              style: GoogleFonts.roboto(fontSize: 16),
-            ),
+            Text(text, style: GoogleFonts.roboto(fontSize: 16)),
           ],
         ),
       ),

@@ -53,12 +53,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   Future<bool> _isMember(String communityId) async {
-    final memberDoc = await _firestore
-        .collection('communities')
-        .doc(communityId)
-        .collection('members')
-        .doc(userId)
-        .get();
+    final memberDoc =
+        await _firestore
+            .collection('communities')
+            .doc(communityId)
+            .collection('members')
+            .doc(userId)
+            .get();
     return memberDoc.exists;
   }
 
@@ -90,11 +91,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            communityId: communityId,
-            userId: userId!,
-            userName: userName ?? 'User',
-          ),
+          builder:
+              (_) => ChatScreen(
+                communityId: communityId,
+                userId: userId!,
+                userName: userName ?? 'User',
+              ),
         ),
       );
     } else {
@@ -112,8 +114,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text("✨ Create New Community", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            "✨ Create New Community",
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ),
           content: SingleChildScrollView(
             child: Column(
               children: [
@@ -150,12 +157,14 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 final desc = descController.text.trim();
                 if (name.isNotEmpty && userId != null) {
                   try {
-                    final docRef = await _firestore.collection('communities').add({
-                      'name': name,
-                      'description': desc,
-                      'createdBy': userId,
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
+                    final docRef = await _firestore
+                        .collection('communities')
+                        .add({
+                          'name': name,
+                          'description': desc,
+                          'createdBy': userId,
+                          'createdAt': FieldValue.serverTimestamp(),
+                        });
                     await _joinCommunity(docRef.id);
                     Navigator.pop(context);
                   } catch (e) {
@@ -184,7 +193,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
         elevation: 1,
         backgroundColor: Colors.blue,
         foregroundColor: Colors.black87,
-        title: Text("Communities", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          "Communities",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -199,13 +211,17 @@ class _CommunityScreenState extends State<CommunityScreen> {
         child: StreamBuilder<QuerySnapshot>(
           stream: _firestore.collection('communities').snapshots(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+            if (!snapshot.hasData)
+              return Center(child: CircularProgressIndicator());
 
             final communities = snapshot.data!.docs;
 
             if (communities.isEmpty) {
               return Center(
-                child: Text("🚫 No communities available.", style: GoogleFonts.poppins(fontSize: 16)),
+                child: Text(
+                  "🚫 No communities available.",
+                  style: GoogleFonts.poppins(fontSize: 16),
+                ),
               );
             }
 
@@ -254,7 +270,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: Colors.white.withOpacity(0.85),
+                                  backgroundColor: Colors.white.withOpacity(
+                                    0.85,
+                                  ),
                                   child: Icon(Icons.group, color: gradient[0]),
                                 ),
                                 SizedBox(width: 8),
@@ -274,20 +292,21 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             SizedBox(height: 10),
                             Text(
                               communityDesc,
-                              maxLines: 3,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.poppins(
-                                fontSize: 13.5,
+                                fontSize: 12,
                                 color: Colors.white.withOpacity(0.9),
                               ),
                             ),
                             SizedBox(height: 6),
                             StreamBuilder<QuerySnapshot>(
-                              stream: _firestore
-                                  .collection('communities')
-                                  .doc(communityId)
-                                  .collection('members')
-                                  .snapshots(),
+                              stream:
+                                  _firestore
+                                      .collection('communities')
+                                      .doc(communityId)
+                                      .collection('members')
+                                      .snapshots(),
                               builder: (context, snap) {
                                 if (!snap.hasData) return SizedBox();
                                 return Text(
@@ -303,7 +322,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             Align(
                               alignment: Alignment.bottomRight,
                               child: ElevatedButton.icon(
-                                icon: Icon(isMember ? Icons.chat : Icons.group_add, size: 18),
+                                icon: Icon(
+                                  isMember ? Icons.chat : Icons.group_add,
+                                  size: 18,
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: gradient[0],
@@ -313,9 +335,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                onPressed: () => isMember
-                                    ? _openChat(communityId)
-                                    : _joinCommunity(communityId),
+                                onPressed:
+                                    () =>
+                                        isMember
+                                            ? _openChat(communityId)
+                                            : _joinCommunity(communityId),
                                 label: Text(
                                   isMember ? "Open Chat" : "Join",
                                   style: GoogleFonts.poppins(
