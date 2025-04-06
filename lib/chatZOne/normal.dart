@@ -59,11 +59,12 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
       if (uid == null) return;
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
-      if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
-        setState(() {
-          preferredLanguage = userDoc.data()!['preferredLanguage'];
-        });
-      }
+      if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
+  setState(() {
+    preferredLanguage = userDoc.data()!['preferred_language'];
+  });
+}
+
     } catch (_) {}
   }
 
@@ -156,7 +157,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
     }
 
     final systemPrompt =
-        ''' You are normal assistant, answer to user's question in a normal way.''';
+        "You are normal assistant, answer to user's question in a normal way., answer $preferredLanguage only dont need any english translation";
 
     final List<Map<String, dynamic>> messages = [
       {

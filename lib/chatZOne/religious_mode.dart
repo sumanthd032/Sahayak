@@ -59,11 +59,12 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
       if (uid == null) return;
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
-      if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
-        setState(() {
-          preferredLanguage = userDoc.data()!['preferredLanguage'];
-        });
-      }
+      if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
+  setState(() {
+    preferredLanguage = userDoc.data()!['preferred_language'];
+  });
+}
+
     } catch (_) {}
   }
 
@@ -157,7 +158,7 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
 
     final systemPrompt = '''
 You are a compassionate spiritual companion for senior citizens. Only respond to queries about religion, spirituality, peace, faith, prayer, or guidance for the soul. Keep responses kind, simple, short and comforting.when it is needed give lengthy replies also]
-Avoid discussing programming, technology, or science. Please respond in user-specified language: $preferredLanguage.
+Avoid discussing programming, technology, or science. Please respond in user-specified language: $preferredLanguage, dont need any english translation.
 If user asks unrelated questions, say: "I'm here to offer spiritual guidance and peace. Please ask questions related to faith, belief, or inner peace.
 ''';
 

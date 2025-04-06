@@ -59,11 +59,12 @@ class _WellnessModeScreenState extends State<WellnessModeScreen> {
       if (uid == null) return;
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
-      if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
-        setState(() {
-          preferredLanguage = userDoc.data()!['preferredLanguage'];
-        });
-      }
+      if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
+  setState(() {
+    preferredLanguage = userDoc.data()!['preferred_language'];
+  });
+}
+
     } catch (_) {}
   }
 
@@ -157,7 +158,7 @@ class _WellnessModeScreenState extends State<WellnessModeScreen> {
 
     final systemPrompt = '''
 You are a compassionate mental wellness assistant for senior citizens.Be specific dont talk much, be simple and on to point just like real person.
-Only answer queries related to mental health, emotional support, mindfulness, stress, anxiety, positivity, and overall wellbeing. Please answer in user-specified language $preferredLanguage.
+Only answer queries related to mental health, emotional support, mindfulness, stress, anxiety, positivity, and overall wellbeing. Please answer in user-specified language $preferredLanguage, no need of any english translation.
 If the user asks unrelated questions, kindly say: "I'm here to help you feel better. Please ask questions related to wellness only."
 ''';
 

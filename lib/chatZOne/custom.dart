@@ -28,6 +28,7 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
   bool _isListening = false;
   bool _isLoadingResponse = false;
   bool _speechAvailable = false;
+  bool _customModeSet = false;
 
   @override
   void initState() {
@@ -37,16 +38,14 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
 
   Future<void> _initServices() async {
     await _fetchPreferredLanguage();
-    await _askForCustomPrompt();
+    await _fetchChatHistory();
     _speechAvailable = await _speechToText.initialize(
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
           setState(() => _isListening = false);
         }
       },
-      onError: (error) {
-        setState(() => _isListening = false);
-      },
+      onError: (error) => setState(() => _isListening = false),
     );
 
     await _flutterTts.setLanguage(preferredLanguage);
@@ -58,49 +57,34 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
       if (uid == null) return;
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
-      if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
+      if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
         setState(() {
-          preferredLanguage = userDoc.data()!['preferredLanguage'];
+          preferredLanguage = userDoc.data()!['preferred_language'];
         });
       }
     } catch (_) {}
   }
 
-  Future<void> _askForCustomPrompt() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    String? input = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final promptController = TextEditingController();
-        return AlertDialog(
-          title: const Text("Custom Prompt"),
-          content: TextField(
-            controller: promptController,
-            decoration: const InputDecoration(
-              hintText: "e.g., You are a poetic assistant.",
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(promptController.text),
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _fetchChatHistory() async {
+    try {
+      final uid = _auth.currentUser?.uid;
+      if (uid == null) return;
 
-    if (input != null && input.trim().isNotEmpty) {
+      final snapshot = await _firestore
+          .collection('custom_chats')
+          .where('uid', isEqualTo: uid)
+          .orderBy('timestamp')
+          .get();
+
       setState(() {
-        customPrompt = input.trim();
+        chatHistory = snapshot.docs.map((doc) => doc.data()).toList();
       });
-    } else {
-      Navigator.pop(context); // Go back if prompt is not given
-    }
+      _scrollToBottom();
+    } catch (_) {}
   }
 
   Future<void> _sendMessage(String message) async {
-    if (message.trim().isEmpty || _isLoadingResponse) return;
+    if (message.trim().isEmpty || _isLoadingResponse || !_customModeSet) return;
 
     FocusScope.of(context).unfocus();
     final uid = _auth.currentUser?.uid;
@@ -121,6 +105,8 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
     _scrollToBottom();
 
     try {
+      await _firestore.collection('custom_chats').add(userMsg);
+
       final responseText = await _generateResponse(message);
 
       final botMsg = {
@@ -136,6 +122,9 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
       });
       _scrollToBottom();
 
+      await _firestore.collection('custom_chats').add(botMsg);
+
+      await _flutterTts.setLanguage(preferredLanguage);
       await _flutterTts.speak(responseText);
     } catch (_) {
       setState(() => _isLoadingResponse = false);
@@ -145,19 +134,22 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
   Future<String> _generateResponse(String input) async {
     const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
     const apiUrl =
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro:generateContent?key=$apiKey';
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
-    final List<Map<String, dynamic>> messages = [
+    final systemPrompt =
+        "You are in \"$customPrompt\" mode only.\nOnly respond according to that mode. Do not entertain unrelated queries.\nAlways answer in $preferredLanguage without translating or switching to any other language.\nIf the user asks anything outside the \"$customPrompt\" mode, respond with: \"This request is outside the current mode. Please stick to '$customPrompt' mode\".";
+
+    final messages = [
       {
-        'role': 'system',
+        'role': 'user',
         'parts': [
-          {'text': customPrompt},
+          {'text': systemPrompt}
         ],
       },
       {
         'role': 'user',
         'parts': [
-          {'text': input},
+          {'text': input}
         ],
       },
     ];
@@ -171,36 +163,22 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        final text =
-            responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
-        return text ?? 'Sorry, I could not understand the response.';
+        return responseData['candidates']?[0]?['content']?['parts']?[0]?['text'] ??
+            'Sorry, I could not understand the response.';
       } else {
         return 'Sorry, something went wrong while getting a response.';
       }
-    } catch (e) {
+    } catch (_) {
       return 'An error occurred while generating a response.';
     }
   }
 
-  void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
-    });
-  }
-
   void _startListening() async {
-    if (!_speechAvailable) return;
-
-    // Stop any ongoing TTS when mic is activated
+    if (!_speechAvailable || !_customModeSet) return;
     await _flutterTts.stop();
 
     if (!_isListening) {
-      setState(() {
-        _isListening = true;
-      });
-
+      setState(() => _isListening = true);
       await _speechToText.listen(
         localeId: preferredLanguage,
         onResult: (result) {
@@ -215,6 +193,70 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
     }
   }
 
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  Future<void> _askForCustomMode() async {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final controller = TextEditingController();
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 24,
+            left: 16,
+            right: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Select a Custom Mode',
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'Enter mode (e.g., Motivation, Health Tips)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    customPrompt = controller.text.trim();
+                    _customModeSet = customPrompt.isNotEmpty;
+                  });
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.done),
+                label: const Text('Set Mode'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   String _formatTimestamp(Timestamp timestamp) {
     final dateTime = timestamp.toDate();
     return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
@@ -225,109 +267,120 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
     return Scaffold(
       backgroundColor: Colors.blueGrey.shade50,
       appBar: AppBar(
-        title: Text(
-          'Custom Mode',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.purple,
+        title: Text('Custom Mode', style: GoogleFonts.poppins()),
+        backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _askForCustomMode,
+          ),
+        ],
       ),
       body: Column(
         children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: chatHistory.length,
-              itemBuilder: (context, index) {
-                final chat = chatHistory[index];
-                final isUser = chat['sender'] == 'user';
-                final timestamp = chat['timestamp'] as Timestamp;
-
-                return Align(
-                  alignment:
-                      isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment:
-                        isUser
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isUser ? Colors.deepPurple : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          chat['message'],
-                          style: GoogleFonts.poppins(
-                            color: isUser ? Colors.white : Colors.black87,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4, left: 4),
-                        child: Text(
-                          _formatTimestamp(timestamp),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+          if (!_customModeSet)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Please set a custom mode to begin chatting.',
+                style: TextStyle(fontSize: 16),
+              ),
             ),
-          ),
+          if (_customModeSet)
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: chatHistory.length,
+                itemBuilder: (context, index) {
+                  final chat = chatHistory[index];
+                  final isUser = chat['sender'] == 'user';
+                  final timestamp = chat['timestamp'] as Timestamp;
+
+                  return Align(
+                    alignment:
+                        isUser ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment:
+                          isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isUser ? Colors.indigo : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            chat['message'],
+                            style: GoogleFonts.poppins(
+                              color: isUser ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4, left: 4),
+                          child: Text(
+                            _formatTimestamp(timestamp),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           if (_isLoadingResponse)
             const Padding(
               padding: EdgeInsets.only(bottom: 12),
-              child: CircularProgressIndicator(color: Colors.deepPurple),
+              child: CircularProgressIndicator(color: Colors.indigo),
             ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    enabled: !_isLoadingResponse,
-                    decoration: InputDecoration(
-                      hintText: 'Ask anything...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+          if (_customModeSet)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      enabled: !_isLoadingResponse,
+                      decoration: InputDecoration(
+                        hintText: 'Ask anything...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
-                      filled: true,
-                      fillColor: Colors.white,
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed:
-                      _isLoadingResponse
-                          ? null
-                          : () => _sendMessage(_controller.text),
-                  color: Colors.purple,
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: _startListening,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              child: Icon(
-                Icons.mic,
-                size: 48,
-                color: _isListening ? Colors.red : Colors.purple,
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: _isLoadingResponse
+                        ? null
+                        : () => _sendMessage(_controller.text),
+                    color: Colors.blue,
+                  ),
+                ],
               ),
             ),
-          ),
+          if (_customModeSet)
+            GestureDetector(
+              onTap: _startListening,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                child: Icon(
+                  Icons.mic,
+                  size: 48,
+                  color: _isListening ? Colors.red : Colors.blue,
+                ),
+              ),
+            ),
         ],
       ),
     );

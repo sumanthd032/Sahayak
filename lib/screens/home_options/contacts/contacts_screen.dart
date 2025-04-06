@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContactScreen extends StatefulWidget {
@@ -37,21 +38,27 @@ class _ContactScreenState extends State<ContactScreen> {
   }
 
   Future<void> _callContact(String phoneNumber) async {
-    final Uri uri = Uri.parse('tel:$phoneNumber');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not place a call')));
+    final Uri uri = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        _showSnackBar('Device cannot make calls.');
+      }
+    } catch (e) {
+      _showSnackBar('Failed to launch dialer.');
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message, style: GoogleFonts.poppins())),
+    );
   }
 
   void _deleteContact(String contactId) async {
     await _firestore.collection('contacts').doc(contactId).delete();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Contact deleted')));
+    _showSnackBar('Contact deleted');
   }
 
   @override
@@ -66,19 +73,32 @@ class _ContactScreenState extends State<ContactScreen> {
     final user = _auth.currentUser;
 
     if (user == null) {
-      return Scaffold(body: Center(child: Text('User not logged in')));
+      return Scaffold(
+        backgroundColor: Colors.pink.shade50,
+        body: Center(
+          child: Text(
+            'User not logged in',
+            style: GoogleFonts.poppins(fontSize: 18),
+          ),
+        ),
+      );
     }
 
     return Scaffold(
+      backgroundColor: Colors.deepPurple.shade100,
       appBar: AppBar(
         backgroundColor: Colors.blue,
+        elevation: 4,
         title: Text(
           'My Contacts',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, color: Colors.white),
             onPressed: () {
               _showAddContactDialog(context);
             },
@@ -86,11 +106,10 @@ class _ContactScreenState extends State<ContactScreen> {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream:
-            _firestore
-                .collection('contacts')
-                .where('uid', isEqualTo: user.uid)
-                .snapshots(),
+        stream: _firestore
+            .collection('contacts')
+            .where('uid', isEqualTo: user.uid)
+            .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -99,10 +118,16 @@ class _ContactScreenState extends State<ContactScreen> {
           final contacts = snapshot.data!.docs;
 
           if (contacts.isEmpty) {
-            return Center(child: Text('No contacts found.'));
+            return Center(
+              child: Text(
+                'No contacts found.',
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+            );
           }
 
           return ListView.builder(
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
             itemCount: contacts.length,
             itemBuilder: (context, index) {
               var contact = contacts[index];
@@ -125,32 +150,44 @@ class _ContactScreenState extends State<ContactScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Contact'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text('Add Contact', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+                style: GoogleFonts.poppins(),
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
               ),
+              SizedBox(height: 12),
               TextField(
                 controller: _phoneController,
-                decoration: InputDecoration(labelText: 'Phone Number'),
                 keyboardType: TextInputType.phone,
+                style: GoogleFonts.poppins(),
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey[700])),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 _addContact();
                 Navigator.pop(context);
               },
-              child: Text('Add'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: Text('Add', style: GoogleFonts.poppins(color: Colors.white)),
             ),
           ],
         );
@@ -178,43 +215,66 @@ class ContactItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      padding: EdgeInsets.all(15),
+      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Row(
         children: [
-          // Contact info
+          CircleAvatar(
+            radius: 26,
+            backgroundColor: Colors.blue.shade100,
+            child: Text(
+              name[0].toUpperCase(),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue.shade900,
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   name,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                SizedBox(height: 5),
+                SizedBox(height: 4),
                 Text(
                   phone,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
                 ),
               ],
             ),
           ),
-          // Action buttons
           Column(
             children: [
               IconButton(
-                icon: Icon(Icons.call, color: Colors.green),
+                icon: Icon(Icons.call),
+                color: Colors.green,
                 onPressed: onCall,
               ),
               IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
+                icon: Icon(Icons.delete),
+                color: Colors.redAccent,
                 onPressed: onDelete,
               ),
             ],

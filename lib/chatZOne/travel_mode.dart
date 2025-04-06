@@ -59,11 +59,12 @@ class _TravelModeState extends State<TravelMode> {
       if (uid == null) return;
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
-      if (userDoc.exists && userDoc.data()?['preferredLanguage'] != null) {
-        setState(() {
-          preferredLanguage = userDoc.data()!['preferredLanguage'];
-        });
-      }
+      if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
+  setState(() {
+    preferredLanguage = userDoc.data()!['preferred_language'];
+  });
+}
+
     } catch (_) {}
   }
 
@@ -152,11 +153,10 @@ class _TravelModeState extends State<TravelMode> {
     ];
 
     if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
-      return "I'm here to help you feel better. Please ask questions related to wellness only.";
+      return "I'm here to help you feel better. Please ask questions related to travel only. ";
     }
 
-    final systemPrompt =
-        ''' You are travel assistant, answer to user's question in a travel way.''';
+    final systemPrompt = "You are travel assistant, answer to user's question in a travel way.. also answer only in $preferredLanguage language only, dont need any english translation";
 
     final List<Map<String, dynamic>> messages = [
       {
@@ -309,7 +309,7 @@ class _TravelModeState extends State<TravelMode> {
                     controller: _controller,
                     enabled: !_isLoadingResponse,
                     decoration: InputDecoration(
-                      hintText: 'Ask anything you needed...',
+                      hintText: 'Ask anything about travel...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

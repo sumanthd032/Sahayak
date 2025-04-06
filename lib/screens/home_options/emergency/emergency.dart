@@ -13,6 +13,7 @@ class EmergencyScreen extends StatefulWidget {
 
 class _EmergencyScreenState extends State<EmergencyScreen> {
   String? familyNumber;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -25,8 +26,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (uid == null) return;
 
     try {
-      final doc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists && doc.data()?['emergencyContact'] != null) {
         setState(() {
           familyNumber = doc.data()!['emergencyContact'];
@@ -35,16 +35,24 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     } catch (e) {
       debugPrint('Error fetching emergency number: $e');
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _callNumber(String number) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: number);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Unable to launch dialer.')));
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $number';
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to launch dialer.')),
+      );
     }
   }
 
@@ -57,15 +65,16 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: 120,
-        height: 120,
+        width: 140,
+        height: 140,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.redAccent, width: 1.5),
+          border: Border.all(color: Colors.redAccent, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.shade100,
+              color: Colors.redAccent.withOpacity(0.2),
               blurRadius: 6,
               offset: const Offset(2, 4),
             ),
@@ -74,11 +83,16 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: Colors.redAccent),
-            const SizedBox(height: 10),
+            Icon(icon, size: 42, color: Colors.redAccent),
+            const SizedBox(height: 12),
             Text(
               label,
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.redAccent,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -89,59 +103,65 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red.shade50,
+      backgroundColor: Colors.pink.shade50,
       appBar: AppBar(
-        title: const Text(
-          'Emergency',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
         backgroundColor: Colors.redAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-          children: [
-            buildEmergencyTile(
-              icon: Icons.family_restroom,
-              label: 'Family',
-              onTap: () {
-                if (familyNumber != null) {
-                  _callNumber(familyNumber!);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No family number found in profile.'),
-                    ),
-                  );
-                }
-              },
-            ),
-            buildEmergencyTile(
-              icon: Icons.local_police,
-              label: 'Police',
-              onTap: () => _callNumber('100'),
-            ),
-            buildEmergencyTile(
-              icon: Icons.local_hospital,
-              label: 'Ambulance',
-              onTap: () => _callNumber('108'),
-            ),
-            buildEmergencyTile(
-              icon: Icons.fire_extinguisher,
-              label: 'Fire',
-              onTap: () => _callNumber('101'),
-            ),
-            buildEmergencyTile(
-              icon: Icons.elderly,
-              label: 'Senior Citizen',
-              onTap: () => _callNumber('14567'),
-            ),
-          ],
+        title: Text(
+          'Emergency',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 20,
+                    runSpacing: 20,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      buildEmergencyTile(
+                        icon: Icons.family_restroom,
+                        label: 'Family',
+                        onTap: () {
+                          if (familyNumber != null) {
+                            _callNumber(familyNumber!);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('No family number found in profile.'),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      buildEmergencyTile(
+                        icon: Icons.local_police,
+                        label: 'Police',
+                        onTap: () => _callNumber('100'),
+                      ),
+                      buildEmergencyTile(
+                        icon: Icons.local_hospital,
+                        label: 'Ambulance',
+                        onTap: () => _callNumber('108'),
+                      ),
+                      buildEmergencyTile(
+                        icon: Icons.fire_extinguisher,
+                        label: 'Fire',
+                        onTap: () => _callNumber('101'),
+                      ),
+                      buildEmergencyTile(
+                        icon: Icons.elderly,
+                        label: 'Senior Citizen',
+                        onTap: () => _callNumber('14567'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

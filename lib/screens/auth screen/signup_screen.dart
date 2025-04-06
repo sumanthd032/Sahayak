@@ -150,6 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'interests': _interestsController.text.trim(),
           'locality': _localityController.text.trim(),
           'created_at': Timestamp.now(),
+          'family_emergency_no' : '0000000000',
         });
 
         _showSnackbar("Account created successfully");

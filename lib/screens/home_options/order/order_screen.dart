@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OrderThingsScreen extends StatelessWidget {
   const OrderThingsScreen({super.key});
@@ -12,30 +13,35 @@ class OrderThingsScreen extends StatelessWidget {
       barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
-          title: Text("Search on $site", style: const TextStyle(fontSize: 20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text("Search on $site", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600)),
           content: TextField(
             controller: searchController,
-            style: const TextStyle(fontSize: 18),
-            decoration: const InputDecoration(
+            style: GoogleFonts.poppins(fontSize: 18),
+            decoration: InputDecoration(
               hintText: "Enter product name/item",
-              hintStyle: TextStyle(fontSize: 18),
+              hintStyle: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+              border: const OutlineInputBorder(),
             ),
             autofocus: true,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel", style: TextStyle(fontSize: 18)),
+              child: Text("Cancel", style: GoogleFonts.poppins(fontSize: 16)),
             ),
-            TextButton(
-              onPressed: () async {
+            ElevatedButton(
+              onPressed: () {
                 String query = searchController.text.trim();
                 if (query.isNotEmpty) {
                   Navigator.of(context).pop();
                   _launchSearch(site, query);
                 }
               },
-              child: const Text("Search", style: TextStyle(fontSize: 18)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+              ),
+              child: Text("Search", style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
             ),
           ],
         );
@@ -71,76 +77,90 @@ class OrderThingsScreen extends StatelessWidget {
       {
         'title': 'Amazon',
         'icon': 'assets/amazon_logo.jpeg',
-        'color': Colors.orange.shade300,
+        'color': Colors.orange.shade400,
       },
       {
         'title': 'Flipkart',
         'icon': 'assets/flipkart_logo.png',
-        'color': Colors.blue.shade400,
+        'color': Colors.indigo.shade400,
       },
       {
         'title': 'Swiggy',
         'icon': 'assets/swiggy_logo.jpeg',
-        'color': Colors.red.shade400,
+        'color': Colors.deepOrange.shade300,
       },
       {
         'title': 'Zomato',
         'icon': 'assets/zomato_logo.jpeg',
-        'color': Colors.lime.shade600,
+        'color': Colors.red.shade300,
       },
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Order Things",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blueAccent,
+        elevation: 4,
       ),
-      body: GridView.builder(
+      body: Container(
         padding: const EdgeInsets.all(20),
-        itemCount: options.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-          childAspectRatio: 1,
-        ),
-        itemBuilder: (context, index) {
-          final option = options[index];
-          return GestureDetector(
-            onTap: () => _promptAndSearch(context, option['title'] as String),
-            child: Container(
-              decoration: BoxDecoration(
-                color: option['color'],
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: const [
-                  BoxShadow(blurRadius: 6, color: Colors.black26),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(option['icon'] as String, height: 70),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      option['title'] as String,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                        color: Colors.white,
+        color: Colors.pink.shade50,
+        child: GridView.builder(
+          itemCount: options.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
+            childAspectRatio: 0.9,
+          ),
+          itemBuilder: (context, index) {
+            final option = options[index];
+            return GestureDetector(
+              onTap: () => _promptAndSearch(context, option['title'] as String),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(
+                  color: option['color'],
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: option['color'].withOpacity(0.4),
+                      offset: const Offset(0, 6),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(option['icon'], height: 70),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        option['title'],
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

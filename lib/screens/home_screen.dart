@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sahayak/screens/chatZone_screen.dart';
 import 'package:sahayak/screens/community/community_screen.dart';
 import 'package:sahayak/screens/home_options/contacts/contacts_screen.dart';
@@ -36,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _tabs = [
     const Placeholder(),       // Home tab
-    CommunityScreen(),       // Community tab
+    CommunityScreen(),         // Community tab
     ChatZoneScreen(),          // ChatZone screen
     const ProfileScreen(),     // Profile screen
   ];
@@ -47,12 +49,20 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchUserName();
   }
 
-  void fetchUserName() {
+  Future<void> fetchUserName() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      setState(() {
-        userName = user.displayName ?? user.email?.split('@')[0] ?? 'User';
-      });
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        setState(() {
+          userName = doc.data()?['full_name'] ?? 'User';
+        });
+      } catch (e) {
+        setState(() {
+          userName = 'User';
+        });
+        print('Error fetching name from Firestore: $e');
+      }
     }
   }
 
@@ -103,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
                 'assets/home_banner.jpeg',
-                 height: MediaQuery.of(context).size.width * 2 / 3,
+                height: MediaQuery.of(context).size.width * 2 / 3,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
@@ -132,63 +142,49 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (_) => const MemoryNotesScreen(),
                         ),
                       );
-                    }
-                    if (title == 'Funzone') {
+                    } else if (title == 'Funzone') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => SplashScreen(),
                         ),
                       );
-                    }
-                    if (title == 'Order Things') {
+                    } else if (title == 'Order Things') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => OrderThingsScreen(),
                         ),
                       );
-                    }
-                    
-                    if (title == 'Pension') {
+                    } else if (title == 'Pension') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => PensionScreen(),
                         ),
                       );
-                    }
-
-                    if (title == 'Storyzone') {
+                    } else if (title == 'Storyzone') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => StoryZoneScreen(),
                         ),
                       );
-                    }
-
-                    if (title == 'Contacts') {
+                    } else if (title == 'Contacts') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ContactScreen(),
                         ),
                       );
-                    }
-
-                    if (title == 'Emergency') {
+                    } else if (title == 'Emergency') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => EmergencyScreen(),
                         ),
                       );
-                    }
-
-
-
-                    if (title == 'Chatzone') {
+                    } else if (title == 'Chatzone') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -196,7 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     }
-                    // Add more navigations if needed
                   },
                 );
               },

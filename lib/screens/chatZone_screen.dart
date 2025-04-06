@@ -53,7 +53,13 @@ class ChatZoneScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ChatZone", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          "ChatZone",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
+          ),
+        ),
         backgroundColor: Colors.blue,
         elevation: 0,
       ),
@@ -67,7 +73,7 @@ class ChatZoneScreen extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: 20,
               crossAxisSpacing: 20,
-              childAspectRatio: 1,
+              childAspectRatio: 0.9,
             ),
             itemBuilder: (context, index) {
               final mode = modes[index];
@@ -77,80 +83,69 @@ class ChatZoneScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => WellnessModeScreen(),
-                      ),
+                          builder: (context) => WellnessModeScreen()),
                     );
-                  }
-                  if (mode['title'] == 'Religious Mode') {
+                  } else if (mode['title'] == 'Religious Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ReligiousModeScreen(),
-                      ),
+                          builder: (context) => ReligiousModeScreen()),
                     );
-                  }
-                  if (mode['title'] == 'Normal Mode') {
+                  } else if (mode['title'] == 'Normal Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => NormalMOdeSCreen(),
-                      ),
+                          builder: (context) => NormalMOdeSCreen()),
                     );
-                  }
-                  if (mode['title'] == 'Travel Mode') {
+                  } else if (mode['title'] == 'Travel Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => TravelMode()),
                     );
-                  }
-                  if (mode['title'] == 'Custom Mode') {
+                  } else if (mode['title'] == 'Custom Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CustomModeScreen(),
-                      ),
+                          builder: (context) => CustomModeScreen()),
                     );
-                  }
-                  if (mode['title'] == 'Knowledge Mode') {
+                  } else if (mode['title'] == 'Knowledge Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => GeneralKnowledgeModeScreen(),
-                      ),
+                          builder: (context) => GeneralKnowledgeModeScreen()),
                     );
                   }
-                  // Add other mode navigations similarly
                 },
-
                 child: Card(
-                  elevation: 4,
+                  elevation: 6,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   color: mode['color'],
                   shadowColor: mode['color'].withOpacity(0.4),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 18),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircleAvatar(
                           backgroundColor: Colors.white,
-                          radius: 30,
+                          radius: 32,
                           child: Icon(
                             mode['icon'],
-                            size: 30,
+                            size: 32,
                             color: mode['color'],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Text(
                           mode['title'],
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Colors.black87,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15.5,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -158,8 +153,9 @@ class ChatZoneScreen extends StatelessWidget {
                           mode['description'],
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.black54,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70,
                           ),
                         ),
                       ],

@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sahayak/screens/community/chat_screen.dart';
+import 'dart:math';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({Key? key}) : super(key: key);
@@ -15,6 +17,17 @@ class _CommunityScreenState extends State<CommunityScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late String userId;
   late String userName;
+
+  final List<List<Color>> gradientColors = [
+    [Colors.purple, Colors.deepPurpleAccent],
+    [Colors.teal, Colors.tealAccent],
+    [Colors.orange, Colors.deepOrange],
+    [Colors.indigo, Colors.blueAccent],
+    [Colors.pinkAccent, Colors.redAccent],
+    [Colors.cyan, Colors.lightBlueAccent],
+    [Colors.green, Colors.lightGreen],
+    [Colors.deepPurple, Colors.purpleAccent],
+  ];
 
   @override
   void initState() {
@@ -92,7 +105,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text("✨ Create New Community"),
+          title: Text("✨ Create New Community", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
           content: SingleChildScrollView(
             child: Column(
               children: [
@@ -119,11 +132,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
+              child: Text("Cancel", style: GoogleFonts.poppins()),
             ),
             ElevatedButton.icon(
               icon: Icon(Icons.create),
-              label: Text("Create"),
+              label: Text("Create", style: GoogleFonts.poppins()),
               onPressed: () async {
                 final name = nameController.text.trim();
                 final desc = descController.text.trim();
@@ -149,7 +162,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Communities"),
+        elevation: 1,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        title: Text("Communities", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -159,13 +175,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.blue.shade50],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        color: Colors.grey.shade100,
+        padding: EdgeInsets.all(12),
         child: StreamBuilder<QuerySnapshot>(
           stream: _firestore.collection('communities').snapshots(),
           builder: (context, snapshot) {
@@ -174,17 +185,26 @@ class _CommunityScreenState extends State<CommunityScreen> {
             final communities = snapshot.data!.docs;
 
             if (communities.isEmpty) {
-              return Center(child: Text("🚫 No communities available."));
+              return Center(
+                child: Text("🚫 No communities available.", style: GoogleFonts.poppins(fontSize: 16)),
+              );
             }
 
-            return ListView.builder(
-              padding: EdgeInsets.all(12),
+            return GridView.builder(
               itemCount: communities.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.0, // Square items
+              ),
               itemBuilder: (context, index) {
                 final doc = communities[index];
                 final communityId = doc.id;
                 final communityName = doc['name'] ?? 'Unnamed';
                 final communityDesc = doc['description'] ?? '';
+
+                final gradient = gradientColors[index % gradientColors.length];
 
                 return FutureBuilder<bool>(
                   future: _isMember(communityId),
@@ -193,74 +213,101 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
                     return AnimatedContainer(
                       duration: Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      margin: EdgeInsets.only(bottom: 12),
-                      child: Card(
-                        elevation: 6,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: gradient,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.group, color: Colors.indigo),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      communityName,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.indigo[900],
-                                      ),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: gradient[0].withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: Colors.white.withOpacity(0.85),
+                                  child: Icon(Icons.group, color: gradient[0]),
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    communityName,
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                      color: Colors.white,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              communityDesc,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13.5,
+                                color: Colors.white.withOpacity(0.9),
                               ),
-                              SizedBox(height: 8),
-                              Text(
-                                communityDesc,
-                                style: TextStyle(fontSize: 14, color: Colors.grey[800]),
-                              ),
-                              SizedBox(height: 8),
-                              StreamBuilder<QuerySnapshot>(
-                                stream: _firestore
-                                    .collection('communities')
-                                    .doc(communityId)
-                                    .collection('members')
-                                    .snapshots(),
-                                builder: (context, snap) {
-                                  if (!snap.hasData) return Text("Loading...");
-                                  return Text(
-                                    '${snap.data!.docs.length} member(s)',
-                                    style: TextStyle(color: Colors.grey[700]),
-                                  );
-                                },
-                              ),
-                              SizedBox(height: 12),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: ElevatedButton.icon(
-                                  icon: Icon(isMember ? Icons.chat : Icons.login),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: isMember ? Colors.green : Colors.blueAccent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                            ),
+                            SizedBox(height: 6),
+                            StreamBuilder<QuerySnapshot>(
+                              stream: _firestore
+                                  .collection('communities')
+                                  .doc(communityId)
+                                  .collection('members')
+                                  .snapshots(),
+                              builder: (context, snap) {
+                                if (!snap.hasData) return SizedBox();
+                                return Text(
+                                  '${snap.data!.docs.length} member(s)',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12.5,
+                                    color: Colors.white70,
                                   ),
-                                  onPressed: () => isMember
-                                      ? _openChat(communityId)
-                                      : _joinCommunity(communityId),
-                                  label: Text(isMember ? "Chat" : "Join"),
+                                );
+                              },
+                            ),
+                            Spacer(),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: ElevatedButton.icon(
+                                icon: Icon(isMember ? Icons.chat : Icons.group_add, size: 18),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: gradient[0],
+                                  minimumSize: Size(110, 36),
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () => isMember
+                                    ? _openChat(communityId)
+                                    : _joinCommunity(communityId),
+                                label: Text(
+                                  isMember ? "Open Chat" : "Join",
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     );

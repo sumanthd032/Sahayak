@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class ChatScreen extends StatefulWidget {
   final String communityId;
@@ -21,9 +22,18 @@ class _ChatScreenState extends State<ChatScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-
-  // Cache to avoid fetching the same user's name repeatedly
   final Map<String, String> _userNameCache = {};
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
 
   void _sendMessage() async {
     String message = _messageController.text.trim();
@@ -36,7 +46,7 @@ class _ChatScreenState extends State<ChatScreen> {
         .add({
       'text': message,
       'senderId': widget.userId,
-      'senderName': widget.userName, // still useful as fallback
+      'senderName': widget.userName,
       'timestamp': FieldValue.serverTimestamp(),
     });
 
@@ -77,6 +87,23 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _startListening() async {
+    bool available = await _speech.initialize();
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(onResult: (result) {
+        setState(() {
+          _messageController.text = result.recognizedWords;
+        });
+      });
+    }
+  }
+
+  void _stopListening() {
+    setState(() => _isListening = false);
+    _speech.stop();
+  }
+
   Widget _buildMessageItem(Map<String, dynamic> data, bool isMe) {
     return FutureBuilder<String>(
       future: _getUserFullName(data['senderId'], data['senderName'] ?? 'Unknown'),
@@ -90,12 +117,12 @@ class _ChatScreenState extends State<ChatScreen> {
             margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isMe ? Colors.blue[200] : Colors.grey[300],
+              color: isMe ? Color(0xFFDCF8C6) : Color(0xFFE8EAF6),
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-                bottomLeft: Radius.circular(isMe ? 12 : 0),
-                bottomRight: Radius.circular(isMe ? 0 : 12),
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+                bottomLeft: Radius.circular(isMe ? 16 : 0),
+                bottomRight: Radius.circular(isMe ? 0 : 16),
               ),
             ),
             child: Column(
@@ -104,7 +131,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (!isMe)
                   Text(
                     displayName,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.indigo),
                   ),
                 SizedBox(height: 4),
                 Text(
@@ -113,10 +140,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 SizedBox(height: 6),
                 Text(
-                  data['timestamp'] != null
-                      ? _formatTimestamp(data['timestamp'])
-                      : '',
-                  style: TextStyle(fontSize: 10, color: Colors.black54),
+                  data['timestamp'] != null ? _formatTimestamp(data['timestamp']) : '',
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -136,8 +161,23 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Community Chat'),
+        elevation: 0,
+        backgroundColor: Colors.blue,
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(Icons.group, color: Colors.indigo),
+            ),
+            SizedBox(width: 10),
+            Text(
+              "Community Chat",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
       ),
+      backgroundColor: Color(0xFFF1F3F6),
       body: Column(
         children: [
           Expanded(
@@ -151,6 +191,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 final docs = snapshot.data!.docs;
                 return ListView.builder(
                   controller: _scrollController,
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
@@ -161,24 +202,43 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          Divider(height: 1),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            color: Colors.grey[100],
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(color: Colors.grey.shade300),
+              ),
+            ),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(
+                    _isListening ? Icons.mic : Icons.mic_none,
+                    color: _isListening ? Colors.red : Colors.indigo,
+                  ),
+                  onPressed: _isListening ? _stopListening : _startListening,
+                ),
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type your message...',
-                      border: InputBorder.none,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
-                    onSubmitted: (_) => _sendMessage(),
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: "Type a message...",
+                        border: InputBorder.none,
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.send, color: Colors.blue),
+                  icon: Icon(Icons.send, color: Colors.indigo),
                   onPressed: _sendMessage,
                 ),
               ],
