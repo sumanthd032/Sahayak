@@ -23,6 +23,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _emailError;
   String? _phoneError;
   String? _passwordError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -43,15 +44,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   bool _isValidPhone(String phone) {
-    final phoneRegex = RegExp(r'^[0-9]{10}$');
-    return phoneRegex.hasMatch(phone);
+    return RegExp(r'^[0-9]{10}$').hasMatch(phone);
   }
 
   bool _isValidPassword(String password) {
-    final passwordRegex = RegExp(
+    return RegExp(
       r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$',
-    );
-    return passwordRegex.hasMatch(password);
+    ).hasMatch(password);
   }
 
   void _validateEmail(String value) {
@@ -70,16 +69,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() {
       _passwordError = _isValidPassword(value)
           ? null
-          : 'Password must be 8+ characters, include upper & lower case, number & symbol';
+          : 'Password must be 8+ chars, include upper, lower, number, & symbol';
     });
   }
 
   void _showSnackbar(String message, {bool isError = false}) {
     final snackBar = SnackBar(
-      content: Text(
-        message,
-        style: TextStyle(color: isError ? Colors.white : Colors.black),
-      ),
+      content: Text(message, style: TextStyle(color: isError ? Colors.white : Colors.black)),
       backgroundColor: isError ? Colors.red : Colors.green,
       duration: const Duration(seconds: 2),
     );
@@ -132,34 +128,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    setState(() => _isLoading = true);
+
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
+      final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      String uid = userCredential.user!.uid;
+      final user = userCredential.user;
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'uid': uid,
-        'full_name': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'email': _emailController.text.trim(),
-        'preferred_language': _languageController.text.trim(),
-        'age': _ageController.text.trim(),
-        'interests': _interestsController.text.trim(),
-        'locality': _localityController.text.trim(),
-        'created_at': Timestamp.now(),
-      });
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'full_name': _nameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'email': _emailController.text.trim(),
+          'preferred_language': _languageController.text.trim(),
+          'age': _ageController.text.trim(),
+          'interests': _interestsController.text.trim(),
+          'locality': _localityController.text.trim(),
+          'created_at': Timestamp.now(),
+        });
 
-      _showSnackbar("Account created successfully");
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+        _showSnackbar("Account created successfully");
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      } else {
+        _showSnackbar("User creation failed", isError: true);
+      }
     } on FirebaseAuthException catch (e) {
       _showSnackbar(e.message ?? "An error occurred", isError: true);
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -174,107 +178,102 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset('assets/sahayak_logo.png', height: 200),
-                  const Text(
-                    "Create Account",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildTextField(_nameController, "Full Name", Icons.person),
-                  const SizedBox(height: 15),
-                  _buildTextField(
-                    _phoneController,
-                    "Phone Number",
-                    Icons.phone,
-                    onChanged: _validatePhone,
-                    errorText: _phoneError,
-                  ),
-                  const SizedBox(height: 15),
-                  _buildTextField(
-                    _emailController,
-                    "Email",
-                    Icons.email,
-                    onChanged: _validateEmail,
-                    errorText: _emailError,
-                  ),
-                  const SizedBox(height: 15),
-                  _buildTextField(
-                    _passwordController,
-                    "Password",
-                    Icons.lock,
-                    isObscure: true,
-                    onChanged: _validatePassword,
-                    errorText: _passwordError,
-                  ),
-                  const SizedBox(height: 15),
-                  _buildTextField(_languageController, "Preferred Language",
-                      Icons.language),
-                  const SizedBox(height: 15),
-                  _buildTextField(_ageController, "Age", Icons.cake,
-                      keyboardType: TextInputType.number),
-                  const SizedBox(height: 15),
-                  _buildTextField(
-                      _interestsController, "Interests", Icons.interests),
-                  const SizedBox(height: 15),
-                  _buildTextField(
-                      _localityController, "Locality", Icons.location_on),
-                  const SizedBox(height: 25),
-                  ElevatedButton(
-                    onPressed: signUpUser,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 80, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Colors.black),
-                      ),
-                    ),
-                    child: const Text(
-                      "Sign Up",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Row(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Already have an account? "),
-                      InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: navigateToLogin,
-                        child: const Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                          child: Text(
-                            "Login",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                      Image.asset('assets/sahayak_logo.png', height: 200),
+                      const Text(
+                        "Create Account",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildTextField(_nameController, "Full Name", Icons.person),
+                      const SizedBox(height: 15),
+                      _buildTextField(
+                        _phoneController,
+                        "Phone Number",
+                        Icons.phone,
+                        onChanged: _validatePhone,
+                        errorText: _phoneError,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildTextField(
+                        _emailController,
+                        "Email",
+                        Icons.email,
+                        onChanged: _validateEmail,
+                        errorText: _emailError,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildTextField(
+                        _passwordController,
+                        "Password",
+                        Icons.lock,
+                        isObscure: true,
+                        onChanged: _validatePassword,
+                        errorText: _passwordError,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildTextField(_languageController, "Preferred Language", Icons.language),
+                      const SizedBox(height: 15),
+                      _buildTextField(_ageController, "Age", Icons.cake,
+                          keyboardType: TextInputType.number),
+                      const SizedBox(height: 15),
+                      _buildTextField(_interestsController, "Interests", Icons.interests),
+                      const SizedBox(height: 15),
+                      _buildTextField(_localityController, "Locality", Icons.location_on),
+                      const SizedBox(height: 25),
+                      ElevatedButton(
+                        onPressed: signUpUser,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Colors.black),
+                          ),
+                        ),
+                        child: const Text(
+                          "Sign Up",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                       ),
+                      const SizedBox(height: 15),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Already have an account? "),
+                          InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: navigateToLogin,
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              child: Text(
+                                "Login",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
