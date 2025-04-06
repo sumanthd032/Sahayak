@@ -85,7 +85,7 @@ class _ContactScreenState extends State<ContactScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.deepPurple.shade100,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.blue,
         elevation: 4,
@@ -106,10 +106,11 @@ class _ContactScreenState extends State<ContactScreen> {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection('contacts')
-            .where('uid', isEqualTo: user.uid)
-            .snapshots(),
+        stream:
+            _firestore
+                .collection('contacts')
+                .where('uid', isEqualTo: user.uid)
+                .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -151,8 +152,13 @@ class _ContactScreenState extends State<ContactScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Text('Add Contact', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            'Add Contact',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -161,7 +167,9 @@ class _ContactScreenState extends State<ContactScreen> {
                 style: GoogleFonts.poppins(),
                 decoration: InputDecoration(
                   labelText: 'Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
               SizedBox(height: 12),
@@ -171,7 +179,9 @@ class _ContactScreenState extends State<ContactScreen> {
                 style: GoogleFonts.poppins(),
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ],
@@ -179,7 +189,10 @@ class _ContactScreenState extends State<ContactScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey[700])),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(color: Colors.grey[700]),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -187,7 +200,10 @@ class _ContactScreenState extends State<ContactScreen> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              child: Text('Add', style: GoogleFonts.poppins(color: Colors.white)),
+              child: Text(
+                'Add',
+                style: GoogleFonts.poppins(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -218,7 +234,7 @@ class ContactItem extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 6, horizontal: 6),
       padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color.fromARGB(255, 226, 229, 229),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

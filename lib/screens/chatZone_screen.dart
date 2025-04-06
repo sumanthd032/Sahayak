@@ -55,16 +55,13 @@ class ChatZoneScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "ChatZone",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            fontSize: 22,
-          ),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 22),
         ),
         backgroundColor: Colors.blue,
         elevation: 0,
       ),
       body: Container(
-        color: Colors.grey.shade100,
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: GridView.builder(
@@ -83,19 +80,22 @@ class ChatZoneScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => WellnessModeScreen()),
+                        builder: (context) => WellnessModeScreen(),
+                      ),
                     );
                   } else if (mode['title'] == 'Religious Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => ReligiousModeScreen()),
+                        builder: (context) => ReligiousModeScreen(),
+                      ),
                     );
                   } else if (mode['title'] == 'Normal Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => NormalMOdeSCreen()),
+                        builder: (context) => NormalMOdeSCreen(),
+                      ),
                     );
                   } else if (mode['title'] == 'Travel Mode') {
                     Navigator.push(
@@ -106,13 +106,15 @@ class ChatZoneScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => CustomModeScreen()),
+                        builder: (context) => CustomModeScreen(),
+                      ),
                     );
                   } else if (mode['title'] == 'Knowledge Mode') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => GeneralKnowledgeModeScreen()),
+                        builder: (context) => GeneralKnowledgeModeScreen(),
+                      ),
                     );
                   }
                 },
@@ -125,7 +127,9 @@ class ChatZoneScreen extends StatelessWidget {
                   shadowColor: mode['color'].withOpacity(0.4),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 18),
+                      horizontal: 12,
+                      vertical: 18,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

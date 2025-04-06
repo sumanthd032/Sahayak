@@ -13,8 +13,16 @@ class OrderThingsScreen extends StatelessWidget {
       barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text("Search on $site", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            "Search on $site",
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           content: TextField(
             controller: searchController,
             style: GoogleFonts.poppins(fontSize: 18),
@@ -41,7 +49,10 @@ class OrderThingsScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
               ),
-              child: Text("Search", style: GoogleFonts.poppins(fontSize: 16, color: Colors.white)),
+              child: Text(
+                "Search",
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
+              ),
             ),
           ],
         );
@@ -111,7 +122,7 @@ class OrderThingsScreen extends StatelessWidget {
       ),
       body: Container(
         padding: const EdgeInsets.all(20),
-        color: Colors.pink.shade50,
+        color: Colors.white,
         child: GridView.builder(
           itemCount: options.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
