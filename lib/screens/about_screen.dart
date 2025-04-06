@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -8,9 +9,12 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.indigo[50],
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "About Sahayak",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         backgroundColor: Colors.blue,
         elevation: 2,
@@ -28,20 +32,33 @@ class AboutScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  children: const [
+                  children: [
                     Text(
                       "Sahayak is an AI-powered companion app designed with love and care for senior citizens.",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       "Our mission is to provide comfort, safety, and connection through smart technology that understands and supports the unique needs of elders.",
-                      style: TextStyle(fontSize: 16),
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       "With intuitive design and helpful features, Sahayak aims to bridge the digital gap and ensure that no senior ever feels alone or helpless.",
-                      style: TextStyle(fontSize: 16),
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -50,9 +67,13 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 30),
 
             // Key Features Section
-            const Text(
+            Text(
               "🌟 Key Features",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 12),
             _buildFeatureTile("🤖 AI-Powered Assistance", "Get personalized help with daily tasks and reminders."),
@@ -73,25 +94,39 @@ class AboutScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       "❤️ Why Sahayak?",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       "We believe in creating a world where technology empowers and includes our elders.",
-                      style: TextStyle(fontSize: 16),
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       "Sahayak is more than just an app — it’s a reliable friend, a patient listener, and a gentle guide.",
-                      style: TextStyle(fontSize: 16),
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       "Developed with ❤️ by: Team NOVA",
-                      style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic, color: Colors.grey),
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -112,9 +147,19 @@ class AboutScreen extends StatelessWidget {
         leading: const Icon(Icons.star, color: Colors.indigo),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Colors.black87,
+          ),
         ),
-        subtitle: Text(subtitle),
+        subtitle: Text(
+          subtitle,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: Colors.black54,
+          ),
+        ),
       ),
     );
   }

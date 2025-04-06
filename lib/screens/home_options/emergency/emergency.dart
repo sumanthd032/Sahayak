@@ -21,41 +21,69 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     fetchFamilyNumber();
   }
 
+  // Fetch the family emergency number from Firestore
   Future<void> fetchFamilyNumber() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+
+    if (uid == null) {
+      setState(() {
+        isLoading = false;  // Stop loading if no user is logged in
+      });
+      return;
+    }
 
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      if (doc.exists && doc.data()?['emergencyContact'] != null) {
+
+      if (doc.exists && doc.data() != null) {
+        // Fetch the family_emergency_no field from the document
+        final emergencyContact = doc.data()?['family_emergency_no'];
+
+        if (emergencyContact != null && emergencyContact is String) {
+          setState(() {
+            familyNumber = emergencyContact;
+          });
+        } else {
+          setState(() {
+            familyNumber = null;  // No valid emergency contact found
+          });
+        }
+      } else {
+        // Document does not exist or is empty
         setState(() {
-          familyNumber = doc.data()!['emergencyContact'];
+          familyNumber = null;
         });
       }
     } catch (e) {
       debugPrint('Error fetching emergency number: $e');
+      setState(() {
+        familyNumber = null;  // Handle error by setting familyNumber to null
+      });
     }
 
     setState(() {
-      isLoading = false;
+      isLoading = false;  // Stop the loading spinner after data is fetched
     });
   }
 
+  // Call the number using the device's dialer
   Future<void> _callNumber(String number) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: number);
     try {
-      if (await canLaunchUrl(phoneUri)) {
+      if (await canLaunch(phoneUri.toString())) {
         await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
       } else {
-        throw 'Could not launch $number';
+        throw 'Could not launch dialer';
       }
     } catch (e) {
+      // Show an error message when dialer cannot be launched
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to launch dialer.')),
+        const SnackBar(content: Text('Unable to launch dialer. Please check your device settings.')),
       );
     }
   }
 
+  // Build emergency tile for each emergency contact
   Widget buildEmergencyTile({
     required IconData icon,
     required String label,

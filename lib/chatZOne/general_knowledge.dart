@@ -186,7 +186,9 @@ class _GeneralKnowledgeModeScreenState
         final responseData = jsonDecode(response.body);
         final text =
             responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
-        return text ?? 'Sorry, I could not understand the response.';
+        final cleanText = text?.replaceAll(RegExp(r'\*\*.*?\*\*'), '').trim();
+
+        return cleanText ?? 'Sorry, I could not understand the response.';
       } else {
         print("Response Error: ${response.body}");
         return 'Sorry, something went wrong while getting a response.';

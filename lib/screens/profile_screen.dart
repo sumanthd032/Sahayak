@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sahayak/screens/about_screen.dart';
 import 'package:sahayak/screens/auth%20screen/login_screen.dart';
-import 'about_screen.dart';
-import 'edit_profile_screen.dart';
-import 'widgets/user_info_section.dart';
+import 'package:sahayak/screens/settings_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sahayak/screens/user_info_screen';  
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -71,56 +72,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final String name = userData['full_name'] ?? '';
     final String email = user?.email ?? '';
     final String phone = userData['phone'] ?? '';
+    final String initials = name.isNotEmpty ? name[0].toUpperCase() : '';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "My Profile",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),  // Use Poppins font
         ),
         backgroundColor: Colors.blue,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => EditProfileScreen(userData: userData),
-                ),
-              );
-              fetchUserData(); // Refresh on return
-            },
-          ),
-        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _buildProfileHeader(name, email),
-                  const SizedBox(height: 30),
-                  UserInfoSection(userData: userData),
-                  const SizedBox(height: 30),
+                  _buildProfileHeader(name, initials),
+                  const SizedBox(height: 10),
+                  _buildUserInfoOptions(),
+                  const SizedBox(height: 10),
                   _buildAboutTile(),
-                  const SizedBox(height: 30),
-                  _buildSignOutButton(),
+                  const SizedBox(height: 10),
+                  _buildSettingsTile(),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildProfileHeader(String name, String email) {
+  Widget _buildProfileHeader(String name, String initials) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.indigo[50],
+        color: Colors.blue[50],
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -130,50 +118,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
           CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.indigo,
+            radius: 50,
+            backgroundColor: Colors.blue,
             child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: const TextStyle(fontSize: 32, color: Colors.white),
-            ),
+              initials,
+              style: const TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+            ), // Display the first letter as the avatar
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name.isNotEmpty ? name : "No Name Provided",
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  email,
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-              ],
-            ),
+          const SizedBox(height: 10),
+          Text(
+            name.isNotEmpty ? name : "No Name Provided",
+            style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold), // Use Poppins font
+          ),
+          const SizedBox(height: 6),
+          Text(
+            user?.email ?? '',
+            style: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),  // Use Poppins font
           ),
         ],
       ),
     );
   }
 
+  Widget _buildUserInfoOptions() {
+    return _buildProfileOptionCard(
+      title: "User Info",
+      icon: Icons.person_outline,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const UserInfoScreen()),
+        );
+      },
+    );
+  }
+
   Widget _buildAboutTile() {
-    return ListTile(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      tileColor: Colors.grey[100],
-      leading: const Icon(Icons.info_outline, color: Colors.indigo),
-      title: const Text("About App", style: TextStyle(fontSize: 16)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+    return _buildProfileOptionCard(
+      title: "About App",
+      icon: Icons.info_outline,
       onTap: () {
         Navigator.push(
           context,
@@ -183,21 +169,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSignOutButton() {
-    return ElevatedButton.icon(
-      onPressed: signOut,
-      icon: const Icon(Icons.logout),
-      label: const Text(
-        "Sign Out",
-        style: TextStyle(fontSize: 16),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.redAccent,
-        foregroundColor: Colors.white,
-        minimumSize: const Size.fromHeight(50),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+  Widget _buildSettingsTile() {
+    return _buildProfileOptionCard(
+      title: "Settings",
+      icon: Icons.settings,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileOptionCard({required String title, required IconData icon, required VoidCallback onTap}) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 5,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Reduced padding
+        leading: Icon(icon, color: Colors.blue),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.normal), // Use Poppins font
         ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
       ),
     );
   }

@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class TravelMode extends StatefulWidget {
-  const TravelMode({Key? key}) : super(key: key);
+  const TravelMode({super.key});
 
   @override
   State<TravelMode> createState() => _TravelModeState();
@@ -27,6 +27,7 @@ class _TravelModeState extends State<TravelMode> {
   bool _isListening = false;
   bool _isLoadingResponse = false;
   bool _speechAvailable = false;
+  String userLocation = ''; // Store user's location
 
   @override
   void initState() {
@@ -60,10 +61,17 @@ class _TravelModeState extends State<TravelMode> {
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
       if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
-  setState(() {
-    preferredLanguage = userDoc.data()!['preferred_language'];
-  });
-}
+        setState(() {
+          preferredLanguage = userDoc.data()!['preferred_language'];
+        });
+      }
+
+      // Fetch user location from Firestore
+      if (userDoc.exists && userDoc.data()?['location'] != null) {
+        setState(() {
+          userLocation = userDoc.data()!['location'];
+        });
+      }
 
     } catch (_) {}
   }
@@ -153,10 +161,11 @@ class _TravelModeState extends State<TravelMode> {
     ];
 
     if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
-      return "I'm here to help you feel better. Please ask questions related to travel only. ";
+      return "I'm here to help you feel better. Please ask questions related to travel only.";
     }
 
-    final systemPrompt = "You are travel assistant, answer to user's question in a travel way.. also answer only in $preferredLanguage language only, dont need any english translation";
+    // Modify the system prompt to include the user's location for more tailored responses
+    final systemPrompt = "You are a travel assistant, answer to user's question in a travel way.. also answer only in $preferredLanguage language only, don't need any english translation. User's location is $userLocation.";
 
     final List<Map<String, dynamic>> messages = [
       {
@@ -184,7 +193,11 @@ class _TravelModeState extends State<TravelMode> {
         final responseData = jsonDecode(response.body);
         final text =
             responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
-        return text ?? 'Sorry, I could not understand the response.';
+        final cleanText = text?.replaceAll(RegExp(r'\*\*.*?\*\*'), '').trim();
+
+            
+        return cleanText ?? 'Sorry, I could not understand the response.';
+
       } else {
         print("Response Error: ${response.body}");
         return 'Sorry, something went wrong while getting a response.';
@@ -239,7 +252,7 @@ class _TravelModeState extends State<TravelMode> {
       backgroundColor: Colors.blueGrey.shade50,
       appBar: AppBar(
         title: Text(
-          'travel Mode',
+          'Travel Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.orange,

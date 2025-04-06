@@ -1,0 +1,252 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+class UserInfoScreen extends StatefulWidget {
+  const UserInfoScreen({Key? key}) : super(key: key);
+
+  @override
+  State<UserInfoScreen> createState() => _UserInfoScreenState();
+}
+
+class _UserInfoScreenState extends State<UserInfoScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
+  Map<String, dynamic> userData = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    if (user == null) {
+      return; // Early exit if the user is null
+    }
+
+    try {
+      final docRef = FirebaseFirestore.instance.collection('users').doc(user!.uid);
+      final doc = await docRef.get();
+
+      if (doc.exists) {
+        setState(() {
+          userData = doc.data()!;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching user data: $e");
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load data. Please try again.')));
+    }
+  }
+
+  Future<void> updateUserInfo(Map<String, dynamic> updatedData) async {
+    if (user == null) {
+      return; // Early exit if user is null
+    }
+
+    try {
+      final docRef = FirebaseFirestore.instance.collection('users').doc(user!.uid);
+      await docRef.update(updatedData);
+      setState(() {
+        userData = updatedData;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile updated!')));
+    } catch (e) {
+      print("Error updating user data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update profile. Please try again.')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+          "User Info",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+
+        ),
+        backgroundColor: Colors.blue,
+        ),
+        
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Type conversion for each field
+    final String fullName = userData['full_name'] ?? 'Not Provided';
+    final String email = user?.email ?? 'Not Provided';
+    final String phone = userData['phone'] ?? 'Not Provided';
+    final String age = userData['age'] is int
+        ? userData['age'].toString()
+        : userData['age'] ?? 'Not Provided';
+    final String locality = userData['locality'] ?? 'Not Provided';
+    final String interests = userData['interests'] ?? 'Not Provided';
+    final String preferredLanguage = userData['preferred_language'] ?? 'Not Provided';
+    
+    final Timestamp? createdAt = userData['created_at'];
+    final DateTime createdAtDate = createdAt?.toDate() ?? DateTime.now();
+    final String formattedDate = DateFormat('d MMMM yyyy HH:mm:ss').format(createdAtDate);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'User Info',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final updatedData = await _editUserInfoDialog(context);
+              if (updatedData != null) {
+                updateUserInfo(updatedData);
+              }
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildUserInfoTile('Full Name', fullName),
+                  _buildUserInfoTile('Email', email),
+                  _buildUserInfoTile('Phone', phone),
+                  _buildUserInfoTile('Age', age),
+                  _buildUserInfoTile('Locality', locality),
+                  _buildUserInfoTile('Interests', interests),
+                  _buildUserInfoTile('Preferred Language', preferredLanguage),
+                  _buildUserInfoTile('Account Created At', formattedDate),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserInfoTile(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.black54,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<Map<String, dynamic>?> _editUserInfoDialog(BuildContext context) async {
+    TextEditingController fullNameController = TextEditingController(text: userData['full_name']);
+    TextEditingController phoneController = TextEditingController(text: userData['phone']);
+    TextEditingController ageController = TextEditingController(text: userData['age'] is int
+        ? userData['age'].toString()
+        : userData['age'] ?? '');  // Type conversion here as well
+    TextEditingController localityController = TextEditingController(text: userData['locality']);
+    TextEditingController interestsController = TextEditingController(text: userData['interests']);
+    TextEditingController preferredLanguageController = TextEditingController(text: userData['preferred_language']);
+
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildTextField('Full Name', fullNameController),
+                _buildTextField('Phone', phoneController),
+                _buildTextField('Age', ageController),
+                _buildTextField('Locality', localityController),
+                _buildTextField('Interests', interestsController),
+                _buildTextField('Preferred Language', preferredLanguageController),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Map<String, dynamic> updatedData = {
+                  'full_name': fullNameController.text,
+                  'phone': phoneController.text,
+                  'age': int.tryParse(ageController.text) ?? ageController.text, // Convert to int if possible
+                  'locality': localityController.text,
+                  'interests': interestsController.text,
+                  'preferred_language': preferredLanguageController.text,
+                };
+                Navigator.pop(context, updatedData);
+              },
+              child: Text('Save Changes', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.poppins(fontSize: 16),
+          border: OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        ),
+      ),
+    );
+  }
+}

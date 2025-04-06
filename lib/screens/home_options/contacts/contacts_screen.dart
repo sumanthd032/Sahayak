@@ -38,7 +38,21 @@ class _ContactScreenState extends State<ContactScreen> {
   }
 
   Future<void> _callContact(String phoneNumber) async {
-    final Uri uri = Uri(scheme: 'tel', path: phoneNumber);
+    if (phoneNumber.isEmpty) {
+      _showSnackBar('Phone number is empty.');
+      return;
+    }
+
+    // Clean up the phone number by removing spaces, dashes, etc.
+    String cleanedNumber = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    
+    if (cleanedNumber.isEmpty) {
+      _showSnackBar('Invalid phone number format.');
+      return;
+    }
+
+    final Uri uri = Uri(scheme: 'tel', path: cleanedNumber);
+
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
@@ -46,7 +60,7 @@ class _ContactScreenState extends State<ContactScreen> {
         _showSnackBar('Device cannot make calls.');
       }
     } catch (e) {
-      _showSnackBar('Failed to launch dialer.');
+      _showSnackBar('Failed to launch dialer: $e');
     }
   }
 

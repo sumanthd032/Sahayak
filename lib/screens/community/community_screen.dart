@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sahayak/screens/community/chat_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
-  const CommunityScreen({Key? key}) : super(key: key);
+  const CommunityScreen({super.key});
 
   @override
   _CommunityScreenState createState() => _CommunityScreenState();
@@ -211,8 +211,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
         child: StreamBuilder<QuerySnapshot>(
           stream: _firestore.collection('communities').snapshots(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData)
+            if (!snapshot.hasData) {
               return Center(child: CircularProgressIndicator());
+            }
 
             final communities = snapshot.data!.docs;
 
