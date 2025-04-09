@@ -44,5 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-lib/secrets.dart
-andriod/app/google-services.json
+/lib/secrets.dart
+/andriod/app/google-services.json
