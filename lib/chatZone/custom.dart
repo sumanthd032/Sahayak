@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:sahayak/utils/secrets.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class CustomModeScreen extends StatefulWidget {
@@ -133,7 +134,6 @@ class _CustomModeScreenState extends State<CustomModeScreen> {
   }
 
   Future<String> _generateResponse(String input) async {
-    const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
     const apiUrl =
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 

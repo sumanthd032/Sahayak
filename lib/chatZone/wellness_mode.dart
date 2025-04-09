@@ -3,18 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sahayak/utils/secrets.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class ReligiousModeScreen extends StatefulWidget {
-  const ReligiousModeScreen({super.key});
+class WellnessModeScreen extends StatefulWidget {
+  const WellnessModeScreen({super.key});
 
   @override
-  State<ReligiousModeScreen> createState() => _ReligiousModeScreenState();
+  State<WellnessModeScreen> createState() => _WellnessModeScreenState();
 }
 
-class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
+class _WellnessModeScreenState extends State<WellnessModeScreen> {
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -75,7 +76,7 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
 
       final snapshot =
           await _firestore
-              .collection('religious_chats')
+              .collection('wellness_chats')
               .where('uid', isEqualTo: uid)
               .orderBy('timestamp')
               .get();
@@ -109,7 +110,7 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
     _scrollToBottom();
 
     try {
-      await _firestore.collection('religious_chats').add(userMsg);
+      await _firestore.collection('wellness_chats').add(userMsg);
 
       final responseText = await _generateResponse(message);
 
@@ -126,7 +127,7 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
       });
       _scrollToBottom();
 
-      await _firestore.collection('religious_chats').add(botMsg);
+      await _firestore.collection('wellness_chats').add(botMsg);
 
       await _flutterTts.setLanguage(preferredLanguage);
       await _flutterTts.speak(responseText);
@@ -136,7 +137,6 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
   }
 
   Future<String> _generateResponse(String input) async {
-    const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
     const apiUrl =
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
@@ -157,9 +157,9 @@ class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
     }
 
     final systemPrompt = '''
-You are a compassionate spiritual companion for senior citizens. Only respond to queries about religion, spirituality, peace, faith, prayer, or guidance for the soul. Keep responses kind, simple, short and comforting.when it is needed give lengthy replies also]
-Avoid discussing programming, technology, or science. Please respond in user-specified language: $preferredLanguage, dont need any english translation.
-If user asks unrelated questions, say: "I'm here to offer spiritual guidance and peace. Please ask questions related to faith, belief, or inner peace.
+You are a compassionate mental wellness assistant for senior citizens.Be specific dont talk much, be simple and on to point just like real person.
+Only answer queries related to mental health, emotional support, mindfulness, stress, anxiety, positivity, and overall wellbeing. Please answer in user-specified language $preferredLanguage, no need of any english translation.
+If the user asks unrelated questions, kindly say: "I'm here to help you feel better. Please ask questions related to wellness only."
 ''';
 
     final List<Map<String, dynamic>> messages = [
@@ -242,13 +242,13 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlue.shade50,
+      backgroundColor: Colors.pink.shade50,
       appBar: AppBar(
         title: Text(
-          'Religious Mode',
+          'Wellness Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.pinkAccent,
       ),
       body: Column(
         children: [
@@ -275,7 +275,8 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isUser ? Colors.indigo : Colors.grey.shade200,
+                          color:
+                              isUser ? Colors.pinkAccent : Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -304,7 +305,7 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
           if (_isLoadingResponse)
             const Padding(
               padding: EdgeInsets.only(bottom: 12),
-              child: CircularProgressIndicator(color: Colors.indigo),
+              child: CircularProgressIndicator(color: Colors.pinkAccent),
             ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -315,7 +316,7 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
                     controller: _controller,
                     enabled: !_isLoadingResponse,
                     decoration: InputDecoration(
-                      hintText: 'Ask something spiritual...',
+                      hintText: 'Ask something about wellness...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -331,7 +332,7 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
                       _isLoadingResponse
                           ? null
                           : () => _sendMessage(_controller.text),
-                  color: Colors.green,
+                  color: Colors.pinkAccent,
                 ),
               ],
             ),
@@ -343,7 +344,7 @@ If user asks unrelated questions, say: "I'm here to offer spiritual guidance and
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.green,
+                color: _isListening ? Colors.red : Colors.pinkAccent,
               ),
             ),
           ),

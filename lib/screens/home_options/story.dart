@@ -5,6 +5,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sahayak/utils/secrets.dart';
 
 class StoryZoneScreen extends StatefulWidget {
   const StoryZoneScreen({super.key});
@@ -19,10 +20,8 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
   bool _isLoading = false;
   bool _isSpeaking = false;
 
-  final String _apiKey =
-      'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U'; // Replace with your actual API key
   final FlutterTts _flutterTts = FlutterTts();
-  String _preferredLangCode = 'en'; // Default to English
+  String _preferredLangCode = 'en'; 
 
   @override
   void initState() {
@@ -56,7 +55,7 @@ class _StoryZoneScreenState extends State<StoryZoneScreen> {
     });
 
     final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_apiKey',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey',
     );
 
     final headers = {'Content-Type': 'application/json'};

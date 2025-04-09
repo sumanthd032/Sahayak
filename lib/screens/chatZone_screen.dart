@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sahayak/chatZOne/custom.dart';
-import 'package:sahayak/chatZOne/general_knowledge.dart';
-import 'package:sahayak/chatZOne/normal.dart';
-import 'package:sahayak/chatZOne/religious_mode.dart';
-import 'package:sahayak/chatZOne/travel_mode.dart';
-import 'package:sahayak/chatZOne/wellness_mode.dart';
+import 'package:sahayak/chatZone/custom.dart';
+import 'package:sahayak/chatZone/general_knowledge.dart';
+import 'package:sahayak/chatZone/normal.dart';
+import 'package:sahayak/chatZone/religious_mode.dart';
+import 'package:sahayak/chatZone/travel_mode.dart';
+import 'package:sahayak/chatZone/wellness_mode.dart';
 
 class ChatZoneScreen extends StatelessWidget {
   const ChatZoneScreen({super.key});

@@ -3,20 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sahayak/utils/secrets.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class GeneralKnowledgeModeScreen extends StatefulWidget {
-  const GeneralKnowledgeModeScreen({super.key});
+class ReligiousModeScreen extends StatefulWidget {
+  const ReligiousModeScreen({super.key});
 
   @override
-  State<GeneralKnowledgeModeScreen> createState() =>
-      _GeneralKnowledgeModeScreenState();
+  State<ReligiousModeScreen> createState() => _ReligiousModeScreenState();
 }
 
-class _GeneralKnowledgeModeScreenState
-    extends State<GeneralKnowledgeModeScreen> {
+class _ReligiousModeScreenState extends State<ReligiousModeScreen> {
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -61,7 +60,7 @@ class _GeneralKnowledgeModeScreenState
       if (uid == null) return;
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
-     if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
+      if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
   setState(() {
     preferredLanguage = userDoc.data()!['preferred_language'];
   });
@@ -77,7 +76,7 @@ class _GeneralKnowledgeModeScreenState
 
       final snapshot =
           await _firestore
-              .collection('knowledge_chats')
+              .collection('religious_chats')
               .where('uid', isEqualTo: uid)
               .orderBy('timestamp')
               .get();
@@ -111,7 +110,7 @@ class _GeneralKnowledgeModeScreenState
     _scrollToBottom();
 
     try {
-      await _firestore.collection('knowledge_chats').add(userMsg);
+      await _firestore.collection('religious_chats').add(userMsg);
 
       final responseText = await _generateResponse(message);
 
@@ -128,7 +127,7 @@ class _GeneralKnowledgeModeScreenState
       });
       _scrollToBottom();
 
-      await _firestore.collection('knowledge_chats').add(botMsg);
+      await _firestore.collection('religious_chats').add(botMsg);
 
       await _flutterTts.setLanguage(preferredLanguage);
       await _flutterTts.speak(responseText);
@@ -138,7 +137,6 @@ class _GeneralKnowledgeModeScreenState
   }
 
   Future<String> _generateResponse(String input) async {
-    const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
     const apiUrl =
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
@@ -158,7 +156,11 @@ class _GeneralKnowledgeModeScreenState
       return "I'm here to help you feel better. Please ask questions related to wellness only.";
     }
 
-    final systemPrompt = "You are now in Knowledge Mode, a calm and enlightening environment. Answer questions with wisdom, clarity, and depth. Focus on topics such as philosophy, spirituality, ancient texts, life guidance, history, or science. Keep your tone peaceful, respectful, and thoughtful—like a gentle teacher or a wise monk. If the user asks deep or abstract questions, respond in a reflective and enlightening way, answer in $preferredLanguage only, dont need any english translation";
+    final systemPrompt = '''
+You are a compassionate spiritual companion for senior citizens. Only respond to queries about religion, spirituality, peace, faith, prayer, or guidance for the soul. Keep responses kind, simple, short and comforting.when it is needed give lengthy replies also]
+Avoid discussing programming, technology, or science. Please respond in user-specified language: $preferredLanguage, dont need any english translation.
+If user asks unrelated questions, say: "I'm here to offer spiritual guidance and peace. Please ask questions related to faith, belief, or inner peace.
+''';
 
     final List<Map<String, dynamic>> messages = [
       {
@@ -240,13 +242,13 @@ class _GeneralKnowledgeModeScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey.shade50,
+      backgroundColor: Colors.lightBlue.shade50,
       appBar: AppBar(
         title: Text(
-          'Knowledge Mode',
+          'Religious Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.green,
       ),
       body: Column(
         children: [
@@ -313,7 +315,7 @@ class _GeneralKnowledgeModeScreenState
                     controller: _controller,
                     enabled: !_isLoadingResponse,
                     decoration: InputDecoration(
-                      hintText: 'Ask something insightful...',
+                      hintText: 'Ask something spiritual...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -329,7 +331,7 @@ class _GeneralKnowledgeModeScreenState
                       _isLoadingResponse
                           ? null
                           : () => _sendMessage(_controller.text),
-                  color: Colors.teal,
+                  color: Colors.green,
                 ),
               ],
             ),
@@ -341,7 +343,7 @@ class _GeneralKnowledgeModeScreenState
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.teal,
+                color: _isListening ? Colors.red : Colors.green,
               ),
             ),
           ),

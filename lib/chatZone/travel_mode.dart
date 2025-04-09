@@ -3,18 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sahayak/utils/secrets.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class NormalMOdeSCreen extends StatefulWidget {
-  const NormalMOdeSCreen({super.key});
+class TravelMode extends StatefulWidget {
+  const TravelMode({super.key});
 
   @override
-  State<NormalMOdeSCreen> createState() => _NormalMOdeSCreenState();
+  State<TravelMode> createState() => _TravelModeState();
 }
 
-class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
+class _TravelModeState extends State<TravelMode> {
   final TextEditingController _controller = TextEditingController();
   final FlutterTts _flutterTts = FlutterTts();
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -27,6 +28,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
   bool _isListening = false;
   bool _isLoadingResponse = false;
   bool _speechAvailable = false;
+  String userLocation = ''; // Store user's location
 
   @override
   void initState() {
@@ -60,10 +62,17 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
 
       final userDoc = await _firestore.collection('users').doc(uid).get();
       if (userDoc.exists && userDoc.data()?['preferred_language'] != null) {
-  setState(() {
-    preferredLanguage = userDoc.data()!['preferred_language'];
-  });
-}
+        setState(() {
+          preferredLanguage = userDoc.data()!['preferred_language'];
+        });
+      }
+
+      // Fetch user location from Firestore
+      if (userDoc.exists && userDoc.data()?['location'] != null) {
+        setState(() {
+          userLocation = userDoc.data()!['location'];
+        });
+      }
 
     } catch (_) {}
   }
@@ -75,7 +84,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
 
       final snapshot =
           await _firestore
-              .collection('normal_chats')
+              .collection('travel_chats')
               .where('uid', isEqualTo: uid)
               .orderBy('timestamp')
               .get();
@@ -109,7 +118,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
     _scrollToBottom();
 
     try {
-      await _firestore.collection('normal_chats').add(userMsg);
+      await _firestore.collection('travel_chats').add(userMsg);
 
       final responseText = await _generateResponse(message);
 
@@ -126,7 +135,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
       });
       _scrollToBottom();
 
-      await _firestore.collection('normal_chats').add(botMsg);
+      await _firestore.collection('travel_chats').add(botMsg);
 
       await _flutterTts.setLanguage(preferredLanguage);
       await _flutterTts.speak(responseText);
@@ -136,7 +145,6 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
   }
 
   Future<String> _generateResponse(String input) async {
-    const apiKey = 'AIzaSyBGiFS4pSgTgJNrkg0WlraNcRzItNNGD3U';
     const apiUrl =
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey';
 
@@ -153,11 +161,11 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
     ];
 
     if (disallowedTopics.any((word) => input.toLowerCase().contains(word))) {
-      return "I'm here to help you feel better. Please ask questions related to wellness only.";
+      return "I'm here to help you feel better. Please ask questions related to travel only.";
     }
 
-    final systemPrompt =
-        "You are normal assistant, answer to user's question in a normal way., answer $preferredLanguage only dont need any english translation";
+    // Modify the system prompt to include the user's location for more tailored responses
+    final systemPrompt = "You are a travel assistant, answer to user's question in a travel way.. also answer only in $preferredLanguage language only, don't need any english translation. User's location is $userLocation.";
 
     final List<Map<String, dynamic>> messages = [
       {
@@ -187,7 +195,9 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
             responseData['candidates']?[0]?['content']?['parts']?[0]?['text'];
         final cleanText = text?.replaceAll(RegExp(r'\*\*.*?\*\*'), '').trim();
 
+            
         return cleanText ?? 'Sorry, I could not understand the response.';
+
       } else {
         print("Response Error: ${response.body}");
         return 'Sorry, something went wrong while getting a response.';
@@ -242,10 +252,10 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
       backgroundColor: Colors.blueGrey.shade50,
       appBar: AppBar(
         title: Text(
-          'Normal Mode',
+          'Travel Mode',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.orange,
       ),
       body: Column(
         children: [
@@ -312,7 +322,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
                     controller: _controller,
                     enabled: !_isLoadingResponse,
                     decoration: InputDecoration(
-                      hintText: 'Ask anything you needed...',
+                      hintText: 'Ask anything about travel...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -328,7 +338,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
                       _isLoadingResponse
                           ? null
                           : () => _sendMessage(_controller.text),
-                  color: Colors.blue,
+                  color: Colors.orange,
                 ),
               ],
             ),
@@ -340,7 +350,7 @@ class _NormalMOdeSCreenState extends State<NormalMOdeSCreen> {
               child: Icon(
                 Icons.mic,
                 size: 48,
-                color: _isListening ? Colors.red : Colors.blue,
+                color: _isListening ? Colors.red : Colors.orange,
               ),
             ),
           ),

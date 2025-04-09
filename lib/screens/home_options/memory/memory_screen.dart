@@ -61,7 +61,7 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
     final TextEditingController textController = TextEditingController(
       text: existingText ?? "",
     );
-    bool _isSensitive = isSensitive;
+    bool isSensitive0 = isSensitive;
 
     showDialog(
       context: context,
@@ -99,10 +99,10 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
                       Row(
                         children: [
                           Checkbox(
-                            value: _isSensitive,
+                            value: isSensitive0,
                             onChanged: (value) {
                               setStateDialog(() {
-                                _isSensitive = value ?? false;
+                                isSensitive0 = value ?? false;
                               });
                             },
                           ),
@@ -133,13 +133,13 @@ class _MemoryNotesScreenState extends State<MemoryNotesScreen> {
                             'title': title,
                             'text': text,
                             'timestamp': FieldValue.serverTimestamp(),
-                            'isSensitive': _isSensitive,
+                            'isSensitive': isSensitive0,
                           });
                         } else {
                           await userNotesRef.doc(id).update({
                             'title': title,
                             'text': text,
-                            'isSensitive': _isSensitive,
+                            'isSensitive': isSensitive0,
                           });
                         }
                       }
@@ -335,11 +335,11 @@ class NoteDetailScreen extends StatelessWidget {
   final bool isSensitive;
 
   const NoteDetailScreen({
-    Key? key,
+    super.key,
     required this.title,
     required this.text,
     required this.isSensitive,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
