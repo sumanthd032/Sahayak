@@ -8,7 +8,7 @@ Sahayak is an empathetic, AI-powered Flutter app designed specifically for senio
 ## 🔗 Live Demo & Releases
 
 - 🌐 **Live App**: [sahayak-34321.web.app](https://sahayak-34321.web.app)  
-- 📦 **Latest Release**: [GitHub Releases](https://github.com/your-username/sahayak/releases)
+- 📦 **Latest Release**: [GitHub Releases](https://github.com/sumanthd032/Sahayak/releases/tag/v1.0.0)
 
 ---
 
